@@ -21,7 +21,7 @@ class DBHelper {
 
     // fix so that data is available in github pages
     if (window.location.host.indexOf('github.io') >= 0) {
-      host = `${host}/${repo}`
+      return `${protocol}//${host}/${repo}/data/restaurants.json`
     }
     return `${protocol}//${host}/data/restaurants.json`;
   }
