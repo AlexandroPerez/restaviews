@@ -1,0 +1,115 @@
+@charset "utf-8";
+/* CSS Document
+ * This stylesheet will be used for medium devices.
+ * It should be used for specific changes made 
+ * for medium devices, like layouts. 
+ *
+ * NOTE: * For changes that affect whole webiste, use style.css
+ *       * This has the original style.css's dimensions for layout
+ */
+
+
+/* ====================== Map ====================== */
+/* TODO: give map a layout for medium devices */
+#map {
+  height: 400px;
+  width: 100%;
+}
+
+/* ====================== Restaurant Filtering ====================== */
+/* TODO: Filter results section in medium devices */
+.filter-options {
+  width: 100%;
+  height: 50px;
+}
+.filter-options h2 {
+  font-size: 1em;
+  font-weight: normal;
+}
+.filter-options select {
+  font-size: .8em;
+  height: 35px;
+  width: 200px;
+}
+
+/* ====================== Restaurant Listing (index.html) ====================== */
+/* TODO: Make restaurant list look good in medium devices. */
+#restaurants-list {
+  margin: 0;
+  padding: 30px 15px 60px;
+}
+#restaurants-list li {
+  margin: 15px;
+  padding: 0 30px 25px;
+  width: 270px;
+}
+#restaurants-list .restaurant-img {
+  margin: 0;
+}
+#restaurants-list li h1 {
+  font-size: .8em;
+  margin: 20px 0 10px;
+}
+#restaurants-list p {
+  margin: 0;
+  font-size: .75em;
+}
+#restaurants-list li a {
+  font-size: .75em;
+}
+
+/* ====================== Restaurant Details ====================== */
+/* TODO: Make Restaurant details look good in medium devices */
+.inside header {
+  width: 100%;
+}
+.inside #map-container {
+  height: 87%;
+  position: fixed;
+  right: 0;
+  top: 80px;
+  width: 50%;
+}
+.inside #map {
+  height: 100%;
+  width: 100%;
+}
+.inside #footer {
+  bottom: 0;
+  position: absolute;
+  width: 50%;
+}
+#restaurant-name {
+  margin: 15px 0 30px;
+}
+#restaurant-img {
+	width: 90%;
+}
+#restaurant-address {
+  font-size: .8em;
+}
+#restaurant-cuisine {
+	width: 90%;
+}
+#restaurant-container, #reviews-container {
+  width: 50%;
+}
+#reviews-container {
+  padding: 30px 40px 80px;
+}
+#reviews-container h2 {
+  padding-bottom: .1em;
+}
+#reviews-list {
+  margin: 0;
+  padding: 0;
+}
+#reviews-list li {
+  width: 85%;
+}
+#reviews-list li p {
+  margin: 0 0 10px;
+}
+#restaurant-hours td {
+  color: #666;
+}

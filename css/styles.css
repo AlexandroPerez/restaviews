@@ -1,12 +1,24 @@
 @charset "utf-8";
-/* CSS Document */
+/* CSS Document
+ * This is the default stylesheet, and it's mobile first.
+ * check styles-medium.css and styles-large.css for other
+ * device breakpoints
+*/
 
+/* Breakpoint at 800 seems to make sense, since two colum deisng
+ * under this dimensions looks awkward. So anything below 800px 
+ * will have one column. 
+*/
+
+
+/* Is there really a need to specify td, th and p?
+   aren't they going to inherit it from body? */
 body,td,th,p{
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 10pt;
-	color: #333;
+  color: #333;
 	line-height: 1.5;
 }
+
 body {
 	background-color: #fdfdfd;
 	margin: 0;
@@ -14,7 +26,7 @@ body {
 }
 ul, li {
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 10pt;
+	font-size: .8em;
 	color: #333;
 }
 a {
@@ -26,14 +38,14 @@ a:hover, a:focus {
 	text-decoration: none;
 }
 a img{
-	border: none 0px #fff;
+	border: none 0px #fff; /* what? none makes sense, but 0px and #fff? */
 }
 h1, h2, h3, h4, h5, h6 {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif; /* <- redundant? */
   margin: 0 0 20px;
 }
 article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
-	display: block;
+	display: block; /* isn't this the default? */
 }
 #maincontent {
   background-color: #f3f3f3;
@@ -42,7 +54,7 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
 #footer {
   background-color: #444;
   color: #aaa;
-  font-size: 8pt;
+  font-size: .65em;
   letter-spacing: 1px;
   padding: 25px;
   text-align: center;
@@ -61,18 +73,19 @@ nav h1 {
 }
 nav h1 a {
   color: #fff;
-  font-size: 14pt;
+  font-size: 1em;
   font-weight: 200;
-  letter-spacing: 10px;
+  letter-spacing: .5em;
   text-transform: uppercase;
 }
 #breadcrumb {
-    padding: 10px 40px 16px;
+    padding: 10px 30px 16px;
     list-style: none;
     background-color: #eee;
-    font-size: 17px;
+    font-size: 1em;
     margin: 0;
-    width: calc(50% - 80px);
+    /* a width of 100% on all devices looks better */
+    width: 100%;
 }
 
 /* Display list items side by side */
@@ -82,7 +95,7 @@ nav h1 a {
 
 /* Add a slash symbol (/) before/behind each list item */
 #breadcrumb li+li:before {
-    padding: 8px;
+    padding: .5em;
     color: black;
     content: "/\00a0";
 }
@@ -99,12 +112,14 @@ nav h1 a {
     text-decoration: underline;
 }
 /* ====================== Map ====================== */
+/* TODO: give maps a layout fit for mobile */
 #map {
   height: 400px;
   width: 100%;
   background-color: #ccc;
 }
 /* ====================== Restaurant Filtering ====================== */
+/* TODO: Filter results section looks awful */
 .filter-options {
   width: 100%;
   height: 50px;
@@ -113,7 +128,7 @@ nav h1 a {
 }
 .filter-options h2 {
   color: white;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: normal;
   line-height: 1;
   margin: 0 20px;
@@ -122,15 +137,15 @@ nav h1 a {
   background-color: white;
   border: 1px solid #fff;
   font-family: Arial,sans-serif;
-  font-size: 11pt;
+  font-size: .8em;
   height: 35px;
-  letter-spacing: 0;
   margin: 10px;
   padding: 0 10px;
   width: 200px;
 }
 
-/* ====================== Restaurant Listing ====================== */
+/* ====================== Restaurant Listing (index.html) +============== */
+/* TODO: restaurant list looks bad. one column will work on mobile though */
 #restaurants-list {
   background-color: #f3f3f3;
   list-style: outside none none;
@@ -159,7 +174,7 @@ nav h1 a {
 #restaurants-list li h1 {
   color: #f18200;
   font-family: Arial,sans-serif;
-  font-size: 14pt;
+  font-size: .8em;
   font-weight: 200;
   letter-spacing: 0;
   line-height: 1.3;
@@ -168,14 +183,14 @@ nav h1 a {
 }
 #restaurants-list p {
   margin: 0;
-  font-size: 11pt;
+  font-size: .75em;
 }
 #restaurants-list li a {
   background-color: orange;
   border-bottom: 3px solid #eee;
   color: #fff;
   display: inline-block;
-  font-size: 10pt;
+  font-size: .75em;
   margin: 15px 0 0;
   padding: 8px 30px 10px;
   text-align: center;
@@ -184,6 +199,7 @@ nav h1 a {
 }
 
 /* ====================== Restaurant Details ====================== */
+/* TODO: make Restaurant details look good in small devices */
 .inside header {
   position: fixed;
   top: 0;
@@ -211,7 +227,7 @@ nav h1 a {
 #restaurant-name {
   color: #f18200;
   font-family: Arial,sans-serif;
-  font-size: 20pt;
+  font-size: 1.25em;
   font-weight: 200;
   letter-spacing: 0;
   margin: 15px 0 30px;
@@ -222,13 +238,13 @@ nav h1 a {
 	width: 90%;
 }
 #restaurant-address {
-  font-size: 12pt;
+  font-size: .8em;
   margin: 10px 0px;
 }
 #restaurant-cuisine {
   background-color: #333;
   color: #ddd;
-  font-size: 12pt;
+  font-size: .8em;
   font-weight: 300;
   letter-spacing: 10px;
   margin: 0 0 20px;
@@ -248,10 +264,10 @@ nav h1 a {
 }
 #reviews-container h2 {
   color: #f58500;
-  font-size: 24pt;
+  font-size: 1.5em;
   font-weight: 300;
   letter-spacing: -1px;
-  padding-bottom: 1pt;
+  padding-bottom: .1em;
 }
 #reviews-list {
   margin: 0;
