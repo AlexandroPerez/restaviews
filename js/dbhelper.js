@@ -8,16 +8,21 @@ class DBHelper {
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-
     /* Fixed so that regardless of location, the database
      * can be accessed. Previous code:
      *
      *    const port = 8000 // Change this to your server port
      *    return `http://localhost:${port}/data/restaurants.json`;
      *
-    */
+     */
+    const repo = "restaviews"; // set this to the name of your repo
     const protocol = window.location.protocol;
     const host =  window.location.host;
+
+    // fix so that data is available in github pages
+    if (window.location.host.indexOf('github.io') >= 0) {
+      host = `${host}/${repo}`
+    }
     return `${protocol}//${host}/data/restaurants.json`;
   }
 
