@@ -15,14 +15,8 @@ class DBHelper {
      *    return `http://localhost:${port}/data/restaurants.json`;
      *
      */
-    const repo = "restaviews"; // set this to the name of your repo
     const protocol = window.location.protocol;
     const host =  window.location.host;
-
-    // fix so that data is available in github pages
-    if (window.location.host.indexOf('github.io') >= 0) {
-      return `${protocol}//${host}/${repo}/data/restaurants.json`
-    }
     return `${protocol}//${host}/data/restaurants.json`;
   }
 
