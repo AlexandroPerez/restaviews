@@ -6,10 +6,15 @@
 */
 
 /* Breakpoint at 800 seems to make sense, since two colum deisng
- * under this dimensions looks awkward. So anything below 800px 
- * will have one column. 
+ * under this dimensions looks awkward. So anything below 800px
+ * will have one column.
 */
 
+* {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
 
 /* Is there really a need to specify td, th and p?
    aren't they going to inherit it from body? */
@@ -64,19 +69,25 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
 nav {
   display: flex;
   width: 100%;
-  height: 80px;
+  /* height: 100px; */
   background-color: #252831;
   text-align:center;
 }
 nav h1 {
-  margin: auto;
+  margin: 15px auto;
 }
 nav h1 a {
   color: #fff;
-  font-size: 1em;
+  font-size: .8em;
   font-weight: 200;
-  letter-spacing: .5em;
+  letter-spacing: .3em;
   text-transform: uppercase;
+}
+@media screen and (max-width: 320px) {
+  nav h1 a {
+    font-size: .75em;
+    letter-spacing: .25em;
+  }
 }
 #breadcrumb {
     padding: 10px 30px 16px;
@@ -122,7 +133,6 @@ nav h1 a {
 /* TODO: Filter results section looks awful */
 .filter-options {
   width: 100%;
-  height: 50px;
   background-color: #3397DB;
   align-items: center;
 }
