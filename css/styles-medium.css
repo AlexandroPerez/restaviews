@@ -1,8 +1,8 @@
 @charset "utf-8";
 /* CSS Document
  * This stylesheet will be used for medium devices.
- * It should be used for specific changes made 
- * for medium devices, like layouts. 
+ * It should be used for specific changes made
+ * for medium devices, like layouts.
  *
  * NOTE: * For changes that affect whole webiste, use style.css
  *       * This has the original style.css's dimensions for layout
@@ -12,50 +12,64 @@
 /* ====================== Map ====================== */
 /* TODO: give map a layout for medium devices */
 #map {
-  height: 400px;
-  width: 100%;
+  height: calc(100vh - 135px); /* update to fit size of filtering */
 }
 
 /* ====================== Restaurant Filtering ====================== */
 /* TODO: Filter results section in medium devices */
 .filter-options {
-  width: 100%;
-  height: 50px;
+  width: 100%; /* redundant */
 }
 .filter-options h2 {
-  font-size: 1em;
-  font-weight: normal;
+  display: inline-block;
 }
 .filter-options select {
   font-size: .8em;
   height: 35px;
-  width: 200px;
+  width: 190px;
 }
 
 /* ====================== Restaurant Listing (index.html) ====================== */
 /* TODO: Make restaurant list look good in medium devices. */
 #restaurants-list {
-  margin: 0;
-  padding: 30px 15px 60px;
+  /* margin: 0; */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 20px 0 0 20px;
 }
 #restaurants-list li {
-  margin: 15px;
-  padding: 0 30px 25px;
-  width: 270px;
+  width: calc(50% - 30px);
+  max-width: 300px;
+  height: 440px;
+  position: relative;
+  margin: 0 20px 20px 0;
+}
+@media screen and (min-width: 900px) {
+  #restaurants-list li {
+    width: calc(33.33% - 27px);
+  }
+}
+@media screen and (min-width: 1200px) {
+  #restaurants-list li {
+    width: calc(25% - 25px);
+  }
 }
 #restaurants-list .restaurant-img {
-  margin: 0;
+  /* margin: 0; */
 }
 #restaurants-list li h1 {
-  font-size: .8em;
-  margin: 20px 0 10px;
+  /* margin: 20px 0 10px; */
+  font-size: 1.2em;
 }
 #restaurants-list p {
-  margin: 0;
-  font-size: .75em;
+  /* margin: 0; */
+  /* font-size: .75em; */
 }
 #restaurants-list li a {
-  font-size: .75em;
+  /* font-size: .75em; */
+  position: absolute;
+  bottom: 0px;
 }
 
 /* ====================== Restaurant Details ====================== */
