@@ -141,6 +141,13 @@ createRestaurantHTML = (restaurant) => {
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  /**
+   * alt set to blank since h1 element has title of restaurant,
+   * and image is there only for the purpose of giving a visual
+   * representation of the restaurant. Thus, giving an alt with the
+   * name of the the restaurant seems redundant.
+   */
+  image.alt = "";
   li.append(image);
 
   const name = document.createElement('h1');
@@ -158,6 +165,10 @@ createRestaurantHTML = (restaurant) => {
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
   more.href = DBHelper.urlForRestaurant(restaurant);
+  /**
+   * Use aria-label to give a more descriptive link for each restaurant.
+   */
+  more.setAttribute("aria-label", "View Details about " + restaurant.name);
   li.append(more)
 
   return li
