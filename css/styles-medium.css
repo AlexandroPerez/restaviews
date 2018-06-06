@@ -88,10 +88,10 @@
   height: 100%;
   width: 100%;
 }
-.inside #footer {
+.inside #footer { /* position absolute and width are needed if it needs to match the width of the restaurant and reviews containers */
   bottom: 0;
   position: absolute;
-  width: 50%;
+  width: 50%; 
 }
 #restaurant-name {
   margin: 15px 0 30px;

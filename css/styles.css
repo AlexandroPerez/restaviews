@@ -53,6 +53,9 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
 	display: block; /* isn't this the default? */
 }
 #maincontent {
+  /* to apply changes only to restaurant.html use 
+   *       .inside #maincontent { }     look for it below
+  */
   background-color: #f3f3f3;
   min-height: 100%;
 }
@@ -93,7 +96,7 @@ nav h1 a span {
   color: orange;
 }
 #breadcrumb {
-    padding: 10px 30px 16px;
+    padding: 10px 20px;
     list-style: none;
     background-color: #eee;
     font-size: 1em;
@@ -105,6 +108,7 @@ nav h1 a span {
 /* Display list items side by side */
 #breadcrumb li {
     display: inline;
+    font-weight: 600;
 }
 
 /* Add a slash symbol (/) before/behind each list item */
@@ -117,6 +121,7 @@ nav h1 a span {
 /* Add a color to all links inside the list */
 #breadcrumb li a {
     color: #0275d8;
+    color: #0a5586; /* new color check  for a11y, maybe not needed if bold text */
     text-decoration: none;
 }
 
@@ -220,29 +225,48 @@ nav h1 a span {
 
 /* ====================== Restaurant Details ====================== */
 /* TODO: make Restaurant details look good in small devices */
+/**
+  * restaurant.html <body> tag has a class .inside. If you want to make changes to elements only
+  * in restaurant.html, but not globally, always include the .inside class
+***/
+
+/* only make changes to #maincontent in restaurant.html */
+.inside #maincontent {
+  margin-top: 510px; /* so that the fixed map can be seen */
+  box-shadow: 0 -3px 3px #0000001f;
+}
+@media screen and (max-height: 510px) and (orientation: landscape) {
+  .inside #maincontent {
+    margin-top: 100vh;
+  }
+}
+
 .inside header {
   position: fixed;
   top: 0;
   width: 100%;
+  box-shadow: 0 3px 3px #0000001f;
   z-index: 1000;
 }
 .inside #map-container {
   background: blue none repeat scroll 0 0;
-  height: 87%;
+  height: calc(100vh - 110px); /* header uses 110px */
+  max-height: 400px;
   position: fixed;
   right: 0;
-  top: 80px;
-  width: 50%;
+  top: 110px; /* header uses 110px */
+  width: 100%;
+  z-index: -1; /* so map remains fixed in background */
 }
 .inside #map {
   background-color: #ccc;
   height: 100%;
   width: 100%;
 }
-.inside #footer {
-  bottom: 0;
-  position: absolute;
-  width: 50%;
+.inside #footer { /* not needed in default small devices layout */
+  /* bottom: 0; */ 
+  /* position: absolute; */
+  /* width: 100%; */
 }
 #restaurant-name {
   color: #f18200;
@@ -274,10 +298,11 @@ nav h1 a span {
 	width: 90%;
 }
 #restaurant-container, #reviews-container {
+  background-color: #f3f3f3;
   border-bottom: 1px solid #d9d9d9;
   border-top: 1px solid #fff;
-  padding: 140px 40px 30px;
-  width: 50%;
+  padding: 30px 40px 80px;
+  /* width: 50%; */
 }
 #reviews-container {
   padding: 30px 40px 80px;
