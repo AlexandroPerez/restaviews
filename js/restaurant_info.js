@@ -78,12 +78,16 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   for (let key in operatingHours) {
     const row = document.createElement('tr');
 
-    const day = document.createElement('td');
+    // the day should be the header of the row in the generated table
+    const day = document.createElement('th');
+    day.setAttribute("scope", "row");
     day.innerHTML = key;
     row.appendChild(day);
 
     const time = document.createElement('td');
-    time.innerHTML = operatingHours[key];
+    // Split multiple hours in one day by inserting a new line. They are coma
+    // separated, so just replace "," for "<br>"
+    time.innerHTML = operatingHours[key].replace(",","<br>");
     row.appendChild(time);
 
     hours.appendChild(row);
