@@ -269,7 +269,7 @@ nav h1 a span {
   /* width: 100%; */
 }
 #restaurant-name {
-  color: #f18200;
+  color: #a55408;
   font-family: Arial,sans-serif;
   font-size: 1.25em;
   font-weight: 200;
@@ -308,7 +308,7 @@ nav h1 a span {
   padding: 30px 40px 80px;
 }
 #reviews-container h2 {
-  color: #f58500;
+  color: #a55408;
   font-size: 1.5em;
   font-weight: 300;
   letter-spacing: -1px;
@@ -332,6 +332,6 @@ nav h1 a span {
 #reviews-list li p {
   margin: 0 0 10px;
 }
-#restaurant-hours td {
+#restaurant-hours th, #restaurant-hours td {
   color: #666;
 }
