@@ -331,6 +331,7 @@ nav h1 a span {
 }
 #reviews-list li p {
   margin: 12px 20px;
+  font-size: 1.5em;
 }
 
 #reviews-list li p.name, #reviews-list li p.date {
@@ -343,13 +344,13 @@ nav h1 a span {
 #reviews-list li p.name {
   padding: 12px 0 12px 20px;
   font-weight: 600;
-  width: 50%;
+  width: 40%;
   border-radius: 25px 0 0 0;
 }
 #reviews-list li p.date {
   padding: 12px 20px 12px 0;
   margin-left: -1px;
-  width: calc(50% + 1px);
+  width: calc(60% + 1px);
   text-align: right;
 }
 
