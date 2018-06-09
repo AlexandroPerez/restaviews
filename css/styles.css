@@ -238,10 +238,10 @@ nav h1 a span {
 
 /* only make changes to #maincontent in restaurant.html */
 .inside #maincontent {
-  margin-top: 510px; /* so that the fixed map can be seen */
+  margin-top: calc(100vw + 110px); /* in portrait map has a height of 100vw */
   box-shadow: 0 -3px 3px #0000001f;
 }
-@media screen and (max-height: 510px) and (orientation: landscape) {
+@media screen and (max-width: 600px) and (orientation: landscape) {
   .inside #maincontent {
     margin-top: 100vh;
   }
@@ -256,13 +256,19 @@ nav h1 a span {
 }
 .inside #map-container {
   background: blue none repeat scroll 0 0;
-  height: calc(100vh - 110px); /* header uses 110px */
-  max-height: 400px;
+  height: calc(100vh - 110px); /*header uses 110px */
   position: fixed;
   right: 0;
   top: 110px; /* header uses 110px */
   width: 100%;
   z-index: -1; /* so map remains fixed in background */
+}
+/* in small mobile devices, map should be a square, so that users
+   can see there is more content under the map */
+@media screen and (orientation: portrait) and (max-width: 600px) {
+  .inside #map-container {
+    height: 100vw;
+  }
 }
 .inside #map {
   background-color: #ccc;
