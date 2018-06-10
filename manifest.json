@@ -1,0 +1,14 @@
+{
+  "name" : "Restaviews",
+  "scope" : "/",
+  "display" : "standalone",
+  "start_url" : "/",
+  "short_name" : "Restaviews",
+  "description" : "Udacity Project for a Restaurant Reviews Progressive Web Application",
+  "orientation" : "portrait",
+  "icons" : [{
+    "src" : "/icon.png",
+    "sizes" : "144x144",
+    "type" : "image/png"
+  }]
+}

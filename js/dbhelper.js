@@ -1,3 +1,4 @@
+var staticCacheName = 'restaviews-static-v1.0';
 /**
  * Common database helper functions.
  */
@@ -156,9 +157,23 @@ class DBHelper {
 
   /**
    * Restaurant image URL.
+   * I edited the helper because code should be reusable! Right? ;)
    */
   static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}`);
+    // default to medium sized image
+    return (`/img/${restaurant.photograph.replace('.jpg', '-medium.jpg')}`);
+  }
+  static imageSrcsetForRestaurant(restaurant) {
+    // default to medium sized image
+    const imageSrc = `/img/${restaurant.photograph}`;
+    return `${imageSrc.replace('.jpg', '-small.jpg')} 240w,
+            ${imageSrc.replace('.jpg', '-medium.jpg')} 400w,
+            ${imageSrc.replace('.jpg', '-large.jpg')} 800w`;
+  }
+  static imageSizesForRestaurant(restaurant) {
+    return `(max-width: 320px) 240px,
+            (max-width: 599px) 500px,
+            400px`;
   }
 
   /**
