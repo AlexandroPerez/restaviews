@@ -1,34 +1,24 @@
 // Increase version number for any change to Service Worker
-var staticCacheName = 'restaviews-static-v1.0';
-var contentImgsCache = 'restaviews-content-imgs';
+const staticCacheName = 'restaviews-static-v1.0';
+const contentImgsCache = 'restaviews-content-imgs';
 var allCaches = [
   staticCacheName,
   contentImgsCache
 ];
 
-let staticAssets = [
-  '/',
-  '/index.html',
-  '/restaurant.html',
-  '/css/styles.css',
-  '/css/styles-medium.css',
-  '/js/dbhelper.js',
-  '/js/main.js',
-  '/js/restaurant_info.js',
-  '/data/restaurants.json'
-];
-
-let images = [1,2,3,4,5,6,7,8,9,10];
-images.forEach((image) => {
-  staticAssets.push(`/img/${image}-medium.jpg`);
-});
-console.log("staticAssets:", staticAssets);
-
 /** At Service Worker Install time, cache all static assets */
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(staticCacheName).then(function(cache) {
-      return cache.addAll(staticAssets);
+      return cache.addAll([
+        '/',
+        '/restaurant.html',
+        '/css/styles.css',
+        '/css/styles-medium.css',
+        '/js/dbhelper.js',
+        '/js/main.js',
+        '/js/restaurant_info.js'
+      ]);
     })
   );
 });
@@ -57,17 +47,20 @@ self.addEventListener('fetch', function(event) {
   if (requestUrl.origin === location.origin) {
     // TODO: handle request sent to /restaurant.html
     // Since url has search params, it doesn't respond with the cached restaurant.html
-    // so make it respondWith it instead
+    // (the url can't be used as a key) so make it respondWith it instead
     if (requestUrl.pathname.startsWith('/restaurant.html')) {
       event.respondWith(caches.match('/restaurant.html'));
       return;
     }
 
     // TODO: handle images
+    if (requestUrl.pathname.startsWith('/img')) {
+      event.respondWith(serveImage(event.request));
+      return;
+    }
 
-    // TODO: handle database requests. see function for handling
+    // TODO: handle database requests. see function definition below
     if (requestUrl.pathname.startsWith('/data')) {
-      console.log('Request sent to /data');
       event.respondWith(serveDB(event.request));
       return;
     }
@@ -76,40 +69,75 @@ self.addEventListener('fetch', function(event) {
   // Default behavior: respond with cached elements, if any (google maps may implement their own?)
   event.respondWith(
     caches.match(event.request).then(function(response) {
-      if (response) {console.log("there was a match in cache");}
       return response || fetch(event.request);
     })
   );
 });
 
-// As of this writting, is a static .json file
-// so this code may need to change in future parts of the project
-// (if databases like mongodb or others are used for example?)
-//
-// Regardless of this being a simulation, a request to a database should only be
-// cached once, content should be always be served from server, and fall back to
-// cached version if needed... so:
-//      fetch, update cache and serve clone, or
-//      serve cached version if offline
-//
-// see: https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/#on-network-response
+/**
+ * As of this writting, is a static .json file
+ * so this code may need to change in future parts of the project
+ * (if databases like mongodb or others are used for example?)
+ *
+ * Apparently it's better to serve content from cache first, otherwise user will
+ * have to wait if connection is slow. This approach serves content from cache first
+ * fetches request from network and then updates the cache. See link below.
+ *
+ * It may be worth trying to serve content only from the network, and cache it so it
+ * can be used only if app is offline, or network has problems. But it may not be the best
+ * approach, again, due to wait times in slow networks.
+ *
+ * see: https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/#on-network-response
+ */
+
+// Cache on network response approach
 function serveDB(request) {
   return caches.open(staticCacheName).then(function(cache) {
     return cache.match(request).then(function(response) {
       const networkFetch = fetch(request).then(function(networkResponse) {
         cache.put(request, networkResponse.clone());
         return networkResponse;
-      });      
-      /** Apparently there is no need to put networkFetch first in the return statement
-       * see: https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/#on-network-response
-       * This will fetch from network, update cache and return response from network, even if response from cache is
-       * being passed first...!?
-       */
+      });
       return response || networkFetch;
     });
   });
 }
 
+/**
+ * This approach will strip the "-small", "-medium" and "-large" suffixes added to
+ * responsive images. So when a request is made for any image:
+ *
+ *    1. Keep request intact for fetch
+ *    2. Make a new URL with a stripped suffix and extension, so it can be used as key for cache storage
+ *    3. If image is not in cache (fetched for the first time), get it, and then cache it
+ *       using the stripped URL
+ *    4. If there is an image in cached with the stripped URL, serve that image instead.
+ *
+ * NOTE: since images can also be of different format, for example the largest image can be
+ *       a .png with the highest quality for retina displays, while lower quality ones will
+ *       be .jpg, it's also a good idea to strip the extension!
+ *
+ * This way only one image will be stored in cache, and since browsers will use the best image
+ * for the device based on srcset, it means it's likely the image will always be the best image
+ * fit for caching
+ */
+
+// Cache only one type of image when requested
 function serveImage(request) {
-  return caches.open
+  // Make a new URL with a stripped suffix and extension from the request url
+  // i.e. /img/1-medium.jpg  ->  /img/1
+  const imageStorageUrl = request.url.replace(/-small\.\w{3}|-medium\.\w{3}|-large\.\w{3}/i, '');
+
+  return caches.open(contentImgsCache).then(function(cache) {
+    return cache.match(imageStorageUrl).then(function(response) {
+      // if image is in cache, return it
+      if (response) return response;
+
+      // if image wasn't in cache, fetch it from network, cache it, and return response
+      return fetch(request).then(function(networkResponse) {
+        cache.put(imageStorageUrl, networkResponse.clone());
+        return networkResponse;
+      });
+    });
+  });
 }
