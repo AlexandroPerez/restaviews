@@ -153,7 +153,14 @@ createReviewHTML = (review) => {
 fillBreadcrumb = (restaurant=self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
-  li.innerHTML = restaurant.name;
+  // aria says we have to provide a last <a> element with 
+  // aria-current property set to "page"
+  const a = document.createElement('a');
+  a.setAttribute("aria-current", "page");
+  // this <a> element should point to current page
+  a.href=`${location.pathname}${location.search}`;
+  a.innerHTML = restaurant.name;
+  li.appendChild(a);
   breadcrumb.appendChild(li);
 }
 

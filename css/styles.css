@@ -95,6 +95,14 @@ nav h1 a {
 nav h1 a span {
   color: orange;
 }
+nav.breadcrumb {
+  display: block;
+  background-color: transparent;
+  text-align: initial;
+}
+#breadcrumb a[aria-current="page"] {
+  color: black;
+}
 #breadcrumb {
     padding: 10px 20px;
     list-style: none;
