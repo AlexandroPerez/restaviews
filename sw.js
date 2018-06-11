@@ -6,22 +6,29 @@ var allCaches = [
   contentImgsCache
 ];
 
+let staticAssets = [
+  '/',
+  '/index.html',
+  '/restaurant.html',
+  '/css/styles.css',
+  '/css/styles-medium.css',
+  '/js/dbhelper.js',
+  '/js/main.js',
+  '/js/restaurant_info.js',
+  '/data/restaurants.json'
+];
+
+let images = [1,2,3,4,5,6,7,8,9,10];
+images.forEach((image) => {
+  staticAssets.push(`/img/${image}-medium.jpg`);
+});
+console.log("staticAssets:", staticAssets);
+
 /** At Service Worker Install time, cache all static assets */
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(staticCacheName).then(function(cache) {
-      return cache.addAll([
-        //Cache all static sources, part of skeleton, here:
-        '/',
-        '/index.html',
-        '/restaurant.html',
-        '/css/styles.css',
-        '/css/styles-medium.css',
-        '/js/dbhelper.js',
-        '/js/main.js',
-        '/js/restaurant_info.js',
-        'data/restaurants.json'
-      ]);
+      return cache.addAll(staticAssets);
     })
   );
 });
@@ -75,8 +82,6 @@ self.addEventListener('fetch', function(event) {
   );
 });
 
-
-
 // As of this writting, is a static .json file
 // so this code may need to change in future parts of the project
 // (if databases like mongodb or others are used for example?)
@@ -86,20 +91,25 @@ self.addEventListener('fetch', function(event) {
 // cached version if needed... so:
 //      fetch, update cache and serve clone, or
 //      serve cached version if offline
+//
+// see: https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/#on-network-response
 function serveDB(request) {
   return caches.open(staticCacheName).then(function(cache) {
     return cache.match(request).then(function(response) {
       const networkFetch = fetch(request).then(function(networkResponse) {
-        if (networkResponse.ok) {
-          console.log("data fetched from network and cache updated");
-        } else {
-          console.log('/data will be served from cache if available');
-        }
         cache.put(request, networkResponse.clone());
         return networkResponse;
-      });
-      // Always return networkFetch if possible
-      return networkFetch || response;
+      });      
+      /** Apparently there is no need to put networkFetch first in the return statement
+       * see: https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/#on-network-response
+       * This will fetch from network, update cache and return response from network, even if response from cache is
+       * being passed first...!?
+       */
+      return response || networkFetch;
     });
   });
+}
+
+function serveImage(request) {
+  return caches.open
 }
