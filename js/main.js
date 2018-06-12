@@ -144,12 +144,9 @@ createRestaurantHTML = (restaurant) => {
   image.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
   image.sizes = DBHelper.imageSizesForRestaurant(restaurant);
   /**
-   * alt set to blank since h1 element has title of restaurant,
-   * and image is there only for the purpose of giving a visual
-   * representation of the restaurant. Thus, giving an alt with the
-   * name of the the restaurant seems redundant.
+   * Set alt as "Picture of Restaurant name"
    */
-  image.alt = "";
+  image.alt = `Picture of ${restaurant.name}`;
   li.append(image);
 
   const name = document.createElement('h1');
