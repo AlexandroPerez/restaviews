@@ -57,8 +57,8 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img'
-  // image only serves as a visual representation.
-  image.setAttribute("alt", "");
+  // give descriptive image alt
+  image.alt=`Picture of ${restaurant.name}`;
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
   image.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
   image.sizes = DBHelper.imageSizesForRestaurant(restaurant);
@@ -153,7 +153,7 @@ createReviewHTML = (review) => {
 fillBreadcrumb = (restaurant=self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
-  // aria says we have to provide a last <a> element with 
+  // aria says we have to provide a last <a> element with
   // aria-current property set to "page"
   const a = document.createElement('a');
   a.setAttribute("aria-current", "page");
