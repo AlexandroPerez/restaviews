@@ -1,5 +1,5 @@
 // Increase version number for any change to Service Worker
-const staticCacheName = 'restaviews-static-v1.0';
+const staticCacheName = 'restaviews-static-v1.1';
 const contentImgsCache = 'restaviews-content-imgs';
 var allCaches = [
   staticCacheName,
