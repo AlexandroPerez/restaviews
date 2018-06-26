@@ -201,4 +201,4 @@ function registerServiceWorker () {
   });
 }
 
-registerServiceWorker();
+//registerServiceWorker();
