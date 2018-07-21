@@ -40,8 +40,8 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           src: ['*.{gif,jpg,png}'],
-          cwd: 'images/',
-          dest: 'img/'
+          cwd: 'src/images/',
+          dest: 'dist/img/'
         }]
       }
     },
@@ -49,7 +49,7 @@ module.exports = function(grunt) {
     /* Clear out the img directory if it exists */
     clean: {
       dev: {
-        src: ['img'],
+        src: ['dist/img'],
       },
     },
 
@@ -57,21 +57,19 @@ module.exports = function(grunt) {
     mkdir: {
       dev: {
         options: {
-          create: ['img']
+          create: ['dist/img']
         },
       },
     },
 
-    /* Copy the "fixed" images that don't go through processing into the img/fixed folder
-       I kept this configuration in case fixed images are needed. See grunt-contrib-copy docs
-       for more info on how to configure this */
+    /* Copy icon images that don't go through processing into the dist/img/icons folder */
     copy: {
       dev: {
         files: [{
           expand: true,
-          cwd: 'images/fixed',
+          cwd: 'src/images/icons',
           src: '**',
-          dest: 'img/fixed'
+          dest: 'dist/img/icons'
         }]
       },
     },

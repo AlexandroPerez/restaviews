@@ -9,25 +9,7 @@
  */
 
 
-/* ====================== Map ====================== */
-/* TODO: give map a layout for medium devices */
-#map {
-  height: calc(100vh - 135px); /* update to fit size of filtering */
-}
 
-/* ====================== Restaurant Filtering ====================== */
-/* TODO: Filter results section in medium devices */
-.filter-options {
-  width: 100%; /* redundant */
-}
-.filter-options h2 {
-  display: inline-block;
-}
-.filter-options select {
-  font-size: .8em;
-  height: 35px;
-  width: 190px;
-}
 
 /* ====================== Restaurant Listing (index.html) ====================== */
 /* TODO: Make restaurant list look good in medium devices. */

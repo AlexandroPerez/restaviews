@@ -1,15 +1,3 @@
-@charset "utf-8";
-/* CSS Document
- * This is the default stylesheet, and it's mobile first.
- * check styles-medium.css and styles-large.css for other
- * device breakpoints
-*/
-
-/* Breakpoint at 800 seems to make sense, since two colum deisng
- * under this dimensions looks awkward. So anything below 800px
- * will have one column.
-*/
-
 * {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -19,16 +7,17 @@
 /* Is there really a need to specify td, th and p?
    aren't they going to inherit it from body? */
 body,td,th,p{
-	font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   color: #333;
-	line-height: 1.5;
+  line-height: 1.5;
 }
 
 body {
-	background-color: #fdfdfd;
-	margin: 0;
-	position:relative;
+  background-color: #fdfdfd;
+  margin: 0;
+  position:relative;
 }
+
 ul, li {
   font-family: Arial, Helvetica, sans-serif;
   font-size: .8em;
@@ -52,22 +41,15 @@ h1, h2, h3, h4, h5, h6 {
 article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
 	display: block; /* isn't this the default? */
 }
+
 #maincontent {
   /* to apply changes only to restaurant.html use
-   *       .inside #maincontent { }     look for it below
+    *       .inside #maincontent { }     look for it below
   */
   background-color: #f3f3f3;
   min-height: 100%;
 }
-#footer {
-  background-color: #363636;
-  color: #aaa;
-  font-size: .65em;
-  letter-spacing: 1px;
-  padding: 25px;
-  text-align: center;
-  text-transform: uppercase;
-}
+
 /* ====================== Navigation ====================== */
 nav {
   display: flex;
@@ -176,73 +158,13 @@ nav.breadcrumb {
   width: calc(100% - 30px);
 }
 
-/* ====================== Restaurant Listing (index.html) +============== */
-/* TODO: restaurant list looks bad. one column will work on mobile though */
-#restaurants-list {
-  background-color: #f3f3f3;
-  list-style: outside none none;
-  margin: 0;
-  padding: 30px 0;
-  font-size: 1em;
-}
-#restaurants-list li {
-  background-color: #fff;
-  margin: 30px;
-  min-height: 380px;
-  padding: 0;
-  border-radius: 25px 0 25px 0;
-  box-shadow: 0 3px 9px #0000001f, 0 3px 9px #0000003d;
-}
-#restaurants-list .restaurant-img {
-  background-color: #ccc;
-  display: block;
-  margin: 0;
-  max-width: 100%;
-  min-height: 248px;
-  min-width: 100%;
-  border-radius: 25px 0 0;
-}
-#restaurants-list li h1 {
-  color: #a55408;
-  letter-spacing: 0;
-  font-weight: 200;
-  line-height: 1.3;
-  margin: 15px;
-  text-transform: uppercase;
-}
-#restaurants-list p {
-  margin: .8em 15px;
-  /* font-size: .75em; */
-}
-#restaurants-list li a {
-  background-color: #a55408;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: 3px;
-  display: inline-block;
-  /* font-size: .75em; */
-  width: calc(100% - 30px);
-  border-radius: 0 0 25px 0;
-  margin: 15px;
-  padding: 8px 30px 10px;
-  text-align: center;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-#restaurants-list li a:focus, #restaurants-list li a:hover {
-  background-color: #2f45c2;
-  outline: none;
-}
-#restaurants-list li a:focus {
-  box-shadow: inset 4px 4px 10px #c5ea44b5, inset -4px -4px 10px #c5ea44b5;
-}
 
 /* ====================== Restaurant Details ====================== */
-/* TODO: make Restaurant details look good in small devices */
 /**
   * restaurant.html <body> tag has a class .inside. If you want to make changes to elements only
   * in restaurant.html, but not globally, always include the .inside class
 ***/
+
 
 /* only make changes to #maincontent in restaurant.html */
 .inside #maincontent {
@@ -283,11 +205,8 @@ nav.breadcrumb {
   height: 100%;
   width: 100%;
 }
-.inside #footer { /* not needed in default small devices layout */
-  /* bottom: 0; */
-  /* position: absolute; */
-  /* width: 100%; */
-}
+
+
 #restaurant-name {
   color: #a55408;
   font-size: 1.25em;
@@ -405,4 +324,26 @@ nav.breadcrumb {
 /* Make focused elements easier to find */
 select:focus, select:hover {
   background-color: #aadaff;
+}
+
+@media screen and (min-width: 600px) {
+  /* ====================== Map ====================== */
+  /* map a layout for medium devices */
+  #map {
+    height: calc(100vh - 135px); /* update to fit size of filtering */
+  }
+
+  /* ====================== Restaurant Filtering ====================== */
+  /* Filter section  for medium devices */
+  .filter-options {
+    width: 100%; /* redundant */
+  }
+  .filter-options h2 {
+    display: inline-block;
+  }
+  .filter-options select {
+    font-size: .8em;
+    height: 35px;
+    width: 190px;
+  }
 }
