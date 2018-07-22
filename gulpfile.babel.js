@@ -5,7 +5,8 @@ import gzip from 'gulp-gzip'; // for compression
 import responsive from 'gulp-responsive';
 import injectCss from 'gulp-inject-css';
 import cleanCss from 'gulp-clean-css';
-import htmlmin from 'gulp-htmlmin';
+import newer from 'gulp-newer';
+import rename from 'gulp-rename';
 
 const paths = {
   styles: {
@@ -38,8 +39,14 @@ export function scripts() {
     .pipe(gulp.dest(paths.scripts.dest));
 }
 
-export function images() {
-  return gulp.src(paths.images.src)
+export function jpgImages() {
+  return gulp.src('src/img/**/*.jpg')
+    .pipe(rename( {suffix: '-large'} )) // necessary for gulp-newer to work, so it can compare
+    .pipe(newer('dist/img/'))           // against a single destination file. Basically adding one
+    .pipe(rename( opt => {              // of the suffixes on the fly, then renaming back.
+      opt.basename = opt.basename.replace('-large', '');
+      return opt;
+    } ))
     .pipe(responsive({
       // Resize all jpg images to three different sizes: 280, 400 and 800
       '**/*.jpg': [{
@@ -54,14 +61,34 @@ export function images() {
         width: 800,
         quality: 50,
         rename: { suffix: '-large'}
-      }],
+      }]
+    }, {
+      // global settings for all jpg images
+      progressive: true,
+      // needed to avoid errors when images aren't "newer"
+      // since gulp-responsive won't have anything to do.
+      errorOnUnusedConfig: false,
+      // Strip all metadata
+      withMetadata: false
+    }))
+    .pipe(gulp.dest("dist/img/"));
+}
+
+export function pngImages() {
+  return gulp.src('src/img/**/*.png')
+    .pipe(newer('dist/img/')) // only process newer images.
+    .pipe(responsive({
       '**/*.png': [{
+        // Keeping original sizes, but make sure sizes are smaller by setting
+        // progressive to false
         progressive: false
       }]
     }, {
       // Global configuration for all images
-      // use progressive (interlace) scan for JPEG
-      progressive: true,
+
+      // needed to avoid errors when images aren't "newer"
+      // since gulp-responsive won't have anything to do.
+      errorOnUnusedConfig: false,
       // Strip all metadata
       withMetadata: false
     }))
