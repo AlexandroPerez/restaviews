@@ -68,3 +68,6 @@ typings/
 
 # Serverless directories
 .serverless
+
+# Ignore dist folder, since the src folder is what's important
+dist/
