@@ -7,6 +7,7 @@ import injectCss from 'gulp-inject-css';
 import cleanCss from 'gulp-clean-css';
 import newer from 'gulp-newer';
 import rename from 'gulp-rename';
+import htmlmin from 'gulp-htmlmin';
 
 const paths = {
   styles: {
@@ -26,8 +27,9 @@ const paths = {
 const htmlminOptions = {
   collapseWhitespace: true,
   minifyCSS: true,
+  minifyJS: true,
   removeComments: true
-}
+};
 
 // Small tasks I can use arrow functions
 export const clean = () => del([ 'dist/' ]);
@@ -50,17 +52,22 @@ export function jpgImages() {
     .pipe(responsive({
       // Resize all jpg images to three different sizes: 280, 400 and 800
       '**/*.jpg': [{
-        width: 280,
-        quality: 30,
-        rename: { suffix: '-small'}
+        width: 800,
+        quality: 50,
+        rename: { suffix: '-large'}
       }, {
         width: 400,
         quality: 40,
         rename: { suffix: '-medium'}
       }, {
-        width: 800,
-        quality: 50,
-        rename: { suffix: '-large'}
+        width: 280,
+        quality: 30,
+        rename: { suffix: '-small'}
+      }, {
+        width: 64,
+        quality: 10,
+        sharp: true,
+        rename: { suffix: '-placeholder'}
       }]
     }, {
       // global settings for all jpg images
@@ -95,6 +102,8 @@ export function pngImages() {
     .pipe(gulp.dest(paths.images.dest));
 }
 
+gulp.task('images', ['jpgImages', 'pngImages']);
+
 export function styles() {
   return gulp.src(paths.styles.src, {sourcemaps: true})
     .pipe(cleanCss())
@@ -103,7 +112,7 @@ export function styles() {
 }
 
 export function critical() {
-  gulp.src('src/index.html')
+  return gulp.src('src/index.html')
     .pipe(injectCss())
     .pipe(htmlmin(htmlminOptions))
     .pipe(gzip())
@@ -111,14 +120,22 @@ export function critical() {
 }
 
 export function html() {
-  gulp.src(['src/**/*.html', '!src/index.html'])
+  return gulp.src(['src/**/*.html', '!src/index.html'])
     .pipe(htmlmin(htmlminOptions))
     .pipe(gzip())
     .pipe(gulp.dest('dist/'));
 }
 
 export function json() {
-  gulp.src('src/**/*.json')
+  return gulp.src('src/**/*.json')
     .pipe(gzip())
     .pipe(gulp.dest('dist/'));
 }
+
+// gulp series ensures tasks run in order, so clean task first, then all
+// others in parallel with gulp.parallel
+//const build = gulp.series(clean, gulp.parallel());
+gulp.task('build', ['scripts','styles','critical','html','json','images']);
+
+
+//export default build;

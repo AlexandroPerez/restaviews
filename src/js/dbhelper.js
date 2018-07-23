@@ -159,7 +159,11 @@ class DBHelper {
    * Restaurant image URL.
    * I edited the helper because code should be reusable! Right? ;)
    */
-  static imageUrlForRestaurant(restaurant) {
+  static imageHolderUrlForRestaurant(restaurant) {
+    // return a tyny image as placeholder for lazy loading
+    return (`/img/${restaurant.photograph.replace('.jpg', '-placeholder.jpg')}`);
+  }
+   static imageUrlForRestaurant(restaurant) {
     // default to medium sized image
     return (`/img/${restaurant.photograph.replace('.jpg', '-medium.jpg')}`);
   }

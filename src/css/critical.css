@@ -42,6 +42,12 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
 	display: block; /* isn't this the default? */
 }
 
+/* for placeholder images in lazy loading */
+.lazy {
+  /* blur images slightly, so they don't look as bad */
+  filter: blur(7px);
+}
+
 #maincontent {
   /* to apply changes only to restaurant.html use
     *       .inside #maincontent { }     look for it below
