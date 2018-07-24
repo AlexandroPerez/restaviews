@@ -8,7 +8,8 @@
   },
   "scripts": {
     "debug": "node debug app.js",
-    "start": "node app.js"
+    "sails": "node sails-server.js",
+    "server": "node_modules/http-server/bin/http-server ./dist -g -p 8000 -c 31104000 -o"
   },
   "dependencies": {
     "include-all": "^1.0.0",
@@ -29,6 +30,7 @@
     "gulp-rename": "^1.3.0",
     "gulp-responsive": "^2.11.0",
     "gulp-uglify-es": "^1.0.4",
+    "http-server": "^0.11.1",
     "sharp": "^0.20.5"
   }
 }

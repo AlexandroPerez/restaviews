@@ -10,14 +10,17 @@ var markers = []
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
+});
 
+const lazyLoadImages = () => {
   // Script for lazy loading images
   // see: https://developers.google.com/web/fundamentals/performance/lazy-loading-guidance/images-and-video/
+
+  // All images with class lazy are now loaded into an array, so is possible to use forEach()
   var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
   console.log(lazyImages);
 
   if ("IntersectionObserver" in window) {
-    console.log("observer in window");
     let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
@@ -35,10 +38,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
       lazyImageObserver.observe(lazyImage);
     });
   } else {
-    // Possibly fall back to a more compatible method here
+    // If the IntersectionObserver isn't supported by the browser, then not lazy loading :(
+      lazyImages.forEach(lazyImage => {
+        lazyImage.src = lazyImage.dataset.src;
+        lazyImage.src = lazyImage.dataset.src;
+        lazyImage.srcset = lazyImage.dataset.srcset;
+        lazyImage.sizes = lazyImage.dataset.sizes;
+        lazyImage.classList.remove("lazy");
+      });
   }
-
-});
+};
 
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -157,6 +166,8 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
+  // After list of restaurants is populated, implement lazy loading of images
+  lazyLoadImages();
   addMarkersToMap();
 }
 
