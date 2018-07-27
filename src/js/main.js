@@ -5,7 +5,8 @@ var map
 var markers = []
 
 /**
- * Fetch neighborhoods and cuisines as soon as the page is loaded.
+ * Fetch neighborhoods and cuisines as soon as the page is loaded, and update filter
+ * options ONLY.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
@@ -18,7 +19,6 @@ const lazyLoadImages = () => {
 
   // All images with class lazy are now loaded into an array, so is possible to use forEach()
   var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
-  console.log(lazyImages);
 
   if ("IntersectionObserver" in window) {
     let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
@@ -50,23 +50,19 @@ const lazyLoadImages = () => {
 };
 
 /**
- * Fetch all neighborhoods and set their HTML.
+ * Fetch all neighborhoods and update ONLY neighborhood Filter Results options.
  */
-fetchNeighborhoods = () => {
-  DBHelper.fetchNeighborhoods((error, neighborhoods) => {
-    if (error) { // Got an error
-      console.error(error);
-    } else {
-      self.neighborhoods = neighborhoods;
-      fillNeighborhoodsHTML();
-    }
-  });
+const fetchNeighborhoods = () => {
+  return DBHelper.fetchNeighborhoods()
+    .then(fillNeighborhoodsHTML)
+    .catch(console.log);
 }
 
 /**
- * Set neighborhoods HTML.
+ * Set neighborhoods filter option's HTML
+ * @param {array} neighborhoods Array of neighborhood strings. Default self.neighborhoods
  */
-fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
+const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   const select = document.getElementById('neighborhoods-select');
   neighborhoods.forEach(neighborhood => {
     const option = document.createElement('option');
@@ -77,9 +73,10 @@ fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
 }
 
 /**
- * Fetch all cuisines and set their HTML.
+ * Fetch all cuisines and update ONLY cuisine Filter Results options
  */
-fetchCuisines = () => {
+const fetchCuisines = () => {
+  // TODO: convert into promise function (say no to callback hell)
   DBHelper.fetchCuisines((error, cuisines) => {
     if (error) { // Got an error!
       console.error(error);
@@ -91,9 +88,9 @@ fetchCuisines = () => {
 }
 
 /**
- * Set cuisines HTML.
+ * Set cuisines filter result's HTML.
  */
-fillCuisinesHTML = (cuisines = self.cuisines) => {
+const fillCuisinesHTML = (cuisines = self.cuisines) => {
   const select = document.getElementById('cuisines-select');
 
   cuisines.forEach(cuisine => {
@@ -105,7 +102,8 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
 }
 
 /**
- * Initialize Google map, called from HTML.
+ * Initialize Google map, set markers its markers, and populate restaurant list.
+ * Called from HTML script as callback.
  */
 window.initMap = () => {
   let loc = {
@@ -121,9 +119,11 @@ window.initMap = () => {
 }
 
 /**
- * Update page and map for current restaurants.
+ * Update page and map markers for currenty selected restaurant filter options. Defaults
+ * to all restaurants.
+ * Called from HTML with select's onchange property.
  */
-updateRestaurants = () => {
+const updateRestaurants = () => {
   const cSelect = document.getElementById('cuisines-select');
   const nSelect = document.getElementById('neighborhoods-select');
 
@@ -146,7 +146,7 @@ updateRestaurants = () => {
 /**
  * Clear current restaurants, their HTML and remove their map markers.
  */
-resetRestaurants = (restaurants) => {
+const resetRestaurants = (restaurants) => {
   // Remove all restaurants
   self.restaurants = [];
   const ul = document.getElementById('restaurants-list');
@@ -161,7 +161,7 @@ resetRestaurants = (restaurants) => {
 /**
  * Create all restaurants HTML and add them to the webpage.
  */
-fillRestaurantsHTML = (restaurants = self.restaurants) => {
+const fillRestaurantsHTML = (restaurants = self.restaurants) => {
   const ul = document.getElementById('restaurants-list');
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
@@ -174,22 +174,23 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 /**
  * Create restaurant HTML.
  */
-createRestaurantHTML = (restaurant) => {
+const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
   const image = document.createElement('img');
   image.className = 'restaurant-img';
-  image.classList.add('lazy');
-  image.src = DBHelper.imageHolderUrlForRestaurant(restaurant);
-  image.dataset.src = DBHelper.imageUrlForRestaurant(restaurant);
-  //image.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
-  image.dataset.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
-  //image.sizes = DBHelper.imageSizesForRestaurant(restaurant);
-  image.dataset.sizes = DBHelper.imageSizesForRestaurant(restaurant);
-  /**
-   * Set alt as "Picture of Restaurant name"
-   */
   image.alt = `Picture of ${restaurant.name}`;
+
+  // class lazy is for images that use lazy loading
+  image.classList.add('lazy');
+  // use a placeholder image, which is should be 64px low quality image ~1kb
+  image.src = DBHelper.imageHolderUrlForRestaurant(restaurant);
+
+  // store image src, src and sizes in dataset for use in lazy loading
+  image.dataset.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.dataset.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
+  image.dataset.sizes = DBHelper.imageSizesForRestaurant(restaurant);
+
   li.append(image);
 
   const name = document.createElement('h1');
@@ -219,7 +220,7 @@ createRestaurantHTML = (restaurant) => {
 /**
  * Add markers for current restaurants to the map.
  */
-addMarkersToMap = (restaurants = self.restaurants) => {
+const addMarkersToMap = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);

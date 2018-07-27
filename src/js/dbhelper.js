@@ -22,7 +22,24 @@ class DBHelper {
   }
 
   /**
+   * Fetch all restaurants
+   * @returns A promise with a json response.
+   */
+  static fetchRestaurantsPromise() {
+    // TODO: use fetch API, return promise and use dynamic urls instead of typed in ones
+    return fetch('http://localhost:1337/restaurants')
+      .then(response => {
+        if (!response.ok) {
+          throw Error(`Fetch request for ${response.url} failed with code: ${response.status}`);
+        }
+        return response.json();
+      })
+      .catch(console.log);
+  }
+
+  /**
    * Fetch all restaurants.
+   * @param {function} callback callback(error, restaurants)
    */
   static fetchRestaurants(callback) {
     let xhr = new XMLHttpRequest();
@@ -93,6 +110,9 @@ class DBHelper {
 
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
+   * @param {string} cuisine cuisine filter
+   * @param {string} neighborhood neighborhood filter
+   * @param {function} callback callback(error, filteredRestaurants)
    */
   static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
     // Fetch all restaurants
@@ -113,21 +133,18 @@ class DBHelper {
   }
 
   /**
-   * Fetch all neighborhoods with proper error handling.
+   * Fetch all neighborhoods using promises
+   * @returns A promise that resolves to an array of unique neighborhoods
    */
-  static fetchNeighborhoods(callback) {
-    // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
+  static fetchNeighborhoods() {
+    return DBHelper.fetchRestaurantsPromise()
+      .then(restaurants => {
         // Get all neighborhoods from all restaurants
-        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood)
+        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
         // Remove duplicates from neighborhoods
-        const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i)
-        callback(null, uniqueNeighborhoods);
-      }
-    });
+        const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
+        return uniqueNeighborhoods;
+      }).catch(console.log);
   }
 
   /**
