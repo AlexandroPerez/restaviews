@@ -7,9 +7,9 @@
     "url": "https://github.com/AlexandroPerez/restaviews.git"
   },
   "scripts": {
-    "debug": "node debug app.js",
-    "sails": "node sails-server.js",
-    "server": "node_modules/http-server/bin/http-server ./dist -g -p 8000 -c 31104000 -o"
+    "sails-server": "node sails-server.js",
+    "static-server": "node_modules/http-server/bin/http-server ./dist -g -p 8000 -c 31104000 -o",
+    "start": "concurrently --kill-others-on-fail -r \"npm:*-server\""
   },
   "dependencies": {
     "include-all": "^1.0.0",
@@ -20,6 +20,7 @@
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
     "babel-register": "^6.26.0",
+    "concurrently": "^3.6.1",
     "del": "^3.0.0",
     "gulp": "^3.9.1",
     "gulp-clean-css": "^3.9.4",
