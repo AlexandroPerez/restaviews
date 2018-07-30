@@ -77,14 +77,17 @@ const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
  */
 const fetchCuisines = () => {
   // TODO: convert into promise function (say no to callback hell)
-  DBHelper.fetchCuisines((error, cuisines) => {
+  return DBHelper.fetchCuisines()
+    .then(fillCuisinesHTML)
+    .catch(console.log);
+  /*DBHelper.fetchCuisines((error, cuisines) => {
     if (error) { // Got an error!
       console.error(error);
     } else {
       self.cuisines = cuisines;
       fillCuisinesHTML();
     }
-  });
+  });/** */
 }
 
 /**

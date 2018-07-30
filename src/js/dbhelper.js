@@ -148,11 +148,20 @@ class DBHelper {
   }
 
   /**
-   * Fetch all cuisines with proper error handling.
+   * Fetch all cuisines using promises.
+   * @returns A promise that resolves to an array of unique cuisines
    */
   static fetchCuisines(callback) {
+    return DBHelper.fetchRestaurantsPromise()
+      .then(restaurants => {
+        // Get all cuisines from all restaurants
+        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
+        // Remove duplicates from cuisines
+        const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
+        return uniqueCuisines;
+      }).catch(console.log);
     // Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
+    /*DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
@@ -162,7 +171,7 @@ class DBHelper {
         const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
         callback(null, uniqueCuisines);
       }
-    });
+    });/** */
   }
 
   /**
