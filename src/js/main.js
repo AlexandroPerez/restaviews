@@ -1,8 +1,8 @@
 let restaurants,
   neighborhoods,
-  cuisines
-var map
-var markers = []
+  cuisines; // these variables may not be needed any more.
+var map; // Global variable to hold Google Maps information
+self.markers = []; // Global variable to hold current map markers.
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded, and update filter
@@ -12,42 +12,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
 });
-
-const lazyLoadImages = () => {
-  // Script for lazy loading images
-  // see: https://developers.google.com/web/fundamentals/performance/lazy-loading-guidance/images-and-video/
-
-  // All images with class lazy are now loaded into an array, so is possible to use forEach()
-  var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
-
-  if ("IntersectionObserver" in window) {
-    let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          let lazyImage = entry.target;
-          lazyImage.src = lazyImage.dataset.src;
-          lazyImage.srcset = lazyImage.dataset.srcset;
-          lazyImage.sizes = lazyImage.dataset.sizes;
-          lazyImage.classList.remove("lazy");
-          lazyImageObserver.unobserve(lazyImage);
-        }
-      });
-    });
-
-    lazyImages.forEach(function(lazyImage) {
-      lazyImageObserver.observe(lazyImage);
-    });
-  } else {
-    // If the IntersectionObserver isn't supported by the browser, then not lazy loading :(
-      lazyImages.forEach(lazyImage => {
-        lazyImage.src = lazyImage.dataset.src;
-        lazyImage.src = lazyImage.dataset.src;
-        lazyImage.srcset = lazyImage.dataset.srcset;
-        lazyImage.sizes = lazyImage.dataset.sizes;
-        lazyImage.classList.remove("lazy");
-      });
-  }
-};
 
 /**
  * Fetch all neighborhoods and update ONLY neighborhood Filter Results options.
@@ -60,7 +24,7 @@ const fetchNeighborhoods = () => {
 
 /**
  * Set neighborhoods filter option's HTML
- * @param {array} neighborhoods Array of neighborhood strings. Default self.neighborhoods
+ * @param {Array.<string>} neighborhoods Array of neighborhood strings. Default self.neighborhoods
  */
 const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   const select = document.getElementById('neighborhoods-select');
@@ -92,6 +56,7 @@ const fetchCuisines = () => {
 
 /**
  * Set cuisines filter result's HTML.
+ * @param {Array.<string>} cuisines Array of cuisine strings. Default self.cuisines
  */
 const fillCuisinesHTML = (cuisines = self.cuisines) => {
   const select = document.getElementById('cuisines-select');
@@ -106,7 +71,8 @@ const fillCuisinesHTML = (cuisines = self.cuisines) => {
 
 /**
  * Initialize Google map, set markers its markers, and populate restaurant list.
- * Called from HTML script as callback.
+ * To be called from HTML deferred script as a callback in Google Maps API as initMap
+ * (not window.initMap).
  */
 window.initMap = () => {
   let loc = {
@@ -124,7 +90,8 @@ window.initMap = () => {
 /**
  * Update page and map markers for currenty selected restaurant filter options. Defaults
  * to all restaurants.
- * Called from HTML with select's onchange property.
+ * To be called from HTML file with each select's onchange property 
+ * (currently cuisine and neighborhood select elements).
  */
 const updateRestaurants = () => {
   const cSelect = document.getElementById('cuisines-select');
@@ -136,46 +103,65 @@ const updateRestaurants = () => {
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
+  // TODO: conver to promise base function
+  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
+    .then(resetRestaurants)
+    .then(fillRestaurantsHTML)
+    .then(addMarkersToMap)
+    .then(lazyLoadImages)
+    .catch(console.log);
+
+  // After list of restaurants is populated, implement lazy loading of images
+  //lazyLoadImages();
+  //addMarkersToMap();
+  /*DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
       console.error(error);
     } else {
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
     }
-  })
+  });/** */
 }
 
 /**
- * Clear current restaurants, their HTML and remove their map markers.
+ * Clear current restaurants, their HTML and remove their map markers. Always use before fillRestaurantsHTML() in a promise chain.
+ * @param {Object[]} restaurants Array of restaurant objects.
+ * @returns restaurants In same state as it was passed.
  */
 const resetRestaurants = (restaurants) => {
-  // Remove all restaurants
-  self.restaurants = [];
+  // Remove all restaurants from html list
+  // self.restaurants = []; //TODO: needed?
   const ul = document.getElementById('restaurants-list');
   ul.innerHTML = '';
 
   // Remove all map markers
   self.markers.forEach(m => m.setMap(null));
   self.markers = [];
-  self.restaurants = restaurants;
+  //self.restaurants = restaurants; //TODO: needed?
+
+  // return restaurants with no changes. Just pipe it to the next promise chain
+  return restaurants;
 }
 
 /**
- * Create all restaurants HTML and add them to the webpage.
+ * Create all restaurants HTML and add them to the webpage. Use resetRestaurants() in promise
+ * chain before using this function.
+ * @param {Object[]} restaurants Array of restaurant objects.
+ * @returns restaurants In same state as it was passed.
  */
-const fillRestaurantsHTML = (restaurants = self.restaurants) => {
+const fillRestaurantsHTML = (restaurants) => {
   const ul = document.getElementById('restaurants-list');
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  // After list of restaurants is populated, implement lazy loading of images
-  lazyLoadImages();
-  addMarkersToMap();
+  return restaurants;
 }
 
 /**
  * Create restaurant HTML.
+ * @param {Object} restaurant object with restaurant information.
+ * @returns An HTML <li> element with populated restaurant information.
  */
 const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
@@ -186,7 +172,7 @@ const createRestaurantHTML = (restaurant) => {
 
   // class lazy is for images that use lazy loading
   image.classList.add('lazy');
-  // use a placeholder image, which is should be 64px low quality image ~1kb
+  // use a placeholder image, which should be a 64px low quality image ~1kb
   image.src = DBHelper.imageHolderUrlForRestaurant(restaurant);
 
   // store image src, src and sizes in dataset for use in lazy loading
@@ -223,7 +209,7 @@ const createRestaurantHTML = (restaurant) => {
 /**
  * Add markers for current restaurants to the map.
  */
-const addMarkersToMap = (restaurants = self.restaurants) => {
+const addMarkersToMap = (restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
@@ -234,6 +220,48 @@ const addMarkersToMap = (restaurants = self.restaurants) => {
   });
 }
 
+/**
+ * Implement lazy loading using an Intersection Observer. Fallback to no lazy loading
+ * if feature is not supported by browser.
+ * 
+ * MUST be used after restaurant information has been populated on page by javascript. So use
+ * as last function in promise chain
+ */
+const lazyLoadImages = () => {
+  // Script for lazy loading images
+  // see: https://developers.google.com/web/fundamentals/performance/lazy-loading-guidance/images-and-video/
+
+  // All images with class lazy are now loaded into an array, so is possible to use forEach()
+  var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+
+  if ("IntersectionObserver" in window) {
+    let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          let lazyImage = entry.target;
+          lazyImage.src = lazyImage.dataset.src;
+          lazyImage.srcset = lazyImage.dataset.srcset;
+          lazyImage.sizes = lazyImage.dataset.sizes;
+          lazyImage.classList.remove("lazy");
+          lazyImageObserver.unobserve(lazyImage);
+        }
+      });
+    });
+
+    lazyImages.forEach(function(lazyImage) {
+      lazyImageObserver.observe(lazyImage);
+    });
+  } else {
+    // If the IntersectionObserver isn't supported by the browser, then not lazy loading :(
+      lazyImages.forEach(lazyImage => {
+        lazyImage.src = lazyImage.dataset.src;
+        lazyImage.src = lazyImage.dataset.src;
+        lazyImage.srcset = lazyImage.dataset.srcset;
+        lazyImage.sizes = lazyImage.dataset.sizes;
+        lazyImage.classList.remove("lazy");
+      });
+  }
+};
 
 /** Register Service Worker */
 

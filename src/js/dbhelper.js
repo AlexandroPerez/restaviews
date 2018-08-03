@@ -16,6 +16,7 @@ class DBHelper {
      *    return `http://localhost:${port}/data/restaurants.json`;
      *
      */
+    //TODO: Change returned URL so that it can be used to access API in port 1337
     const protocol = window.location.protocol;
     const host =  window.location.host;
     return `${protocol}//${host}/data/restaurants.json`;
@@ -23,10 +24,11 @@ class DBHelper {
 
   /**
    * Fetch all restaurants
-   * @returns A promise with a json response.
+   * @returns {Promise.<Object[]>} A promise that resolves to an Array of restaurant objects (parsed json response).
    */
   static fetchRestaurantsPromise() {
-    // TODO: use fetch API, return promise and use dynamic urls instead of typed in ones
+    // TODO: use DBHelper.DATABASE_URL
+    // TODO: replace old fetchRestaurants() with this new promise based function.
     return fetch('http://localhost:1337/restaurants')
       .then(response => {
         if (!response.ok) {
@@ -109,13 +111,26 @@ class DBHelper {
   }
 
   /**
-   * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
+   * Fetch restaurants filtered by cuisine and neighborhood using promises.
    * @param {string} cuisine cuisine filter
    * @param {string} neighborhood neighborhood filter
-   * @param {function} callback callback(error, filteredRestaurants)
+   * @returns {Promise.<Object[]>} A promise that resolves to an Array of filtered restaurants.
    */
-  static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
-    // Fetch all restaurants
+  //static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
+  static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood) {
+    return DBHelper.fetchRestaurantsPromise()
+      .then(restaurants => {
+        // filter restaurants by cuisine and neighborhood, if any ('all' means no filter)
+        if (cuisine != 'all') { // filter by cuisine
+          restaurants = restaurants.filter(r => r.cuisine_type == cuisine);
+        }
+        if (neighborhood != 'all') { // filter by neighborhood
+          restaurants = restaurants.filter(r => r.neighborhood == neighborhood);
+        }
+        return restaurants;
+      });
+
+    /*// Fetch all restaurants
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
@@ -129,7 +144,7 @@ class DBHelper {
         }
         callback(null, results);
       }
-    });
+    });/** */
   }
 
   /**
@@ -186,19 +201,21 @@ class DBHelper {
    * I edited the helper because code should be reusable! Right? ;)
    */
   static imageHolderUrlForRestaurant(restaurant) {
-    // return a tyny image as placeholder for lazy loading
-    return (`/img/${restaurant.photograph.replace('.jpg', '-placeholder.jpg')}`);
+    // return a tyny image as placeholder for lazy loading. Default to restaurant id, in case photograph is missing.
+    let url = `/img/${(restaurant.photograph||restaurant.id)}-placeholder.jpg` 
+    return url;
   }
    static imageUrlForRestaurant(restaurant) {
-    // default to medium sized image
-    return (`/img/${restaurant.photograph.replace('.jpg', '-medium.jpg')}`);
+    // default to medium sized image. Default to restaurant id, in case photograph is missing.
+    let url = `/img/${(restaurant.photograph||restaurant.id)}-medium.jpg`;
+    return url;
   }
   static imageSrcsetForRestaurant(restaurant) {
-    // default to medium sized image
-    const imageSrc = `/img/${restaurant.photograph}`;
-    return `${imageSrc.replace('.jpg', '-small.jpg')} 240w,
-            ${imageSrc.replace('.jpg', '-medium.jpg')} 400w,
-            ${imageSrc.replace('.jpg', '-large.jpg')} 800w`;
+    // default to medium sized image. Default to restaurant id, in case photograph is missing.
+    const imageSrc = `/img/${(restaurant.photograph||restaurant.id)}`;
+    return `${imageSrc}-small.jpg 240w,
+            ${imageSrc}-medium.jpg 400w,
+            ${imageSrc}-large.jpg 800w`;
   }
   static imageSizesForRestaurant(restaurant) {
     return `(max-width: 320px) 240px,
