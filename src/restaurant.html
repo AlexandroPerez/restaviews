@@ -6,10 +6,13 @@
   <meta name="Description" content="Udacity Project for a Restaurant Reviews Progressive Web Application">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#ef4848">
-  <!-- Main CSS file -->
-    <link rel="stylesheet" href="css/styles.css" type="text/css">
-  <!-- CSS files for media query breakpoints -->
-    <link rel="stylesheet" media="screen and (min-width: 600px)" href="css/styles-medium.css">
+
+  <!-- Critical CSS will be injected/inlined in a style tag below by gulp critical (see gulpfile). Don't remove comment below! -->
+  <!-- inject-css css/critical.css -->
+
+  <link rel="stylesheet" href="css/styles.css" type="text/css">
+  <link rel="stylesheet" media="screen and (min-width: 600px)" href="css/styles-medium.css">
+
   <link rel="manifest" href="/manifest.json">
   <title>Restaurant Info</title>
 </head>
@@ -68,7 +71,7 @@
   <!-- Main javascript file -->
   <script type="text/javascript" src="js/restaurant_info.js"></script>
   <!-- Google Maps -->
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=IzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script>
   <!-- End scripts -->
 
 </body>

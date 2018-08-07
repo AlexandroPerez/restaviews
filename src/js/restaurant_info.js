@@ -25,9 +25,11 @@ window.initMap = () => {
  */
 fetchRestaurantFromURL = (callback) => {
   if (self.restaurant) { // restaurant already fetched!
+    console.log("Restaurants was already fetched! How?");
     callback(null, self.restaurant)
     return;
   }
+  console.log("Restaurants is never fetched before loading page! Duh!!");
   const id = getParameterByName('id');
   if (!id) { // no id found in URL
     error = 'No restaurant id in URL'
@@ -98,10 +100,13 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   }
 }
 
+//TODO: don't use self.restaurant.review as default. Make sure it works in a promise chain.
 /**
  * Create all reviews HTML and add them to the webpage.
+ *
+ * @param {{name: string, createdAt: number, rating: number, comments: string}[]} reviews Array of objects with at least the above review information.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -121,9 +126,11 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 }
 
 /**
- * Create review HTML and add it to the webpage.
+ * Creates review <li> element and returns it.
+ *
+ * @param {{name: string, createdAt: number, rating: number, comments: string,}} review object with at least the above review information.
  */
-createReviewHTML = (review) => {
+const createReviewHTML = (review) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.className = "name";
@@ -132,7 +139,7 @@ createReviewHTML = (review) => {
 
   const date = document.createElement('p');
   date.className = "date";
-  date.innerHTML = review.date;
+  date.innerHTML = DBHelper.getDate(review.createdAt);
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -149,8 +156,10 @@ createReviewHTML = (review) => {
 
 /**
  * Add restaurant name to the breadcrumb navigation menu
+ *
+ * @param {{name: string}} restaurant object with at least the above restaurant information
  */
-fillBreadcrumb = (restaurant=self.restaurant) => {
+const fillBreadcrumb = (restaurant=self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   // aria says we have to provide a last <a> element with
@@ -165,9 +174,9 @@ fillBreadcrumb = (restaurant=self.restaurant) => {
 }
 
 /**
- * Get a parameter by name from page URL.
+ * Get value from a parameter in URL.
  */
-getParameterByName = (name, url) => {
+const getParameterByName = (name, url) => {
   if (!url)
     url = window.location.href;
   name = name.replace(/[\[\]]/g, '\\$&');

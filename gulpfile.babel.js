@@ -11,7 +11,7 @@ import htmlmin from 'gulp-htmlmin';
 
 const paths = {
   styles: {
-    src: ['src/css/**/*.css', '!src/css/critical.css'],
+    src: ['src/css/**/*.css', '!src/css/critical.css'], // Ignore critical.css which is injected in html files
     dest: 'dist/css/'
   },
   scripts: {
@@ -19,8 +19,13 @@ const paths = {
     dest: 'dist/'
   },
   images: {
-    src: 'src/img/**/*.{jpg,png}',
+    jpg: 'src/img/**/*.jpg',
+    png: 'src/img/**/*.png',
     dest: 'dist/img/'
+  },
+  html: {
+    src: ['src/**/*.html'],
+    dest: 'dist/'
   }
 };
 
@@ -36,15 +41,16 @@ export const clean = () => del([ 'dist/' ]);
 
 export function scripts() {
   return gulp.src(paths.scripts.src, {sourcemaps: true})
+    .pipe(newer(paths.scripts.dest))
     .pipe(uglify())
     .pipe(gzip())
     .pipe(gulp.dest(paths.scripts.dest));
 }
 
 export function jpgImages() {
-  return gulp.src('src/img/**/*.jpg')
+  return gulp.src(paths.images.jpg)
     .pipe(rename( {suffix: '-large'} )) // necessary for gulp-newer to work, so it can compare
-    .pipe(newer('dist/img/'))           // against a single destination file. Basically adding one
+    .pipe(newer(paths.images.dest))     // against a single destination file. Basically adding one
     .pipe(rename( opt => {              // of the suffixes on the fly, then renaming back.
       opt.basename = opt.basename.replace('-large', '');
       return opt;
@@ -78,12 +84,13 @@ export function jpgImages() {
       // Strip all metadata
       withMetadata: false
     }))
-    .pipe(gulp.dest("dist/img/"));
+    .pipe(gulp.dest(paths.images.dest));
 }
 
 export function pngImages() {
-  return gulp.src('src/img/**/*.png')
-    .pipe(newer('dist/img/')) // only process newer images.
+//return gulp.src('src/img/**/*.png')
+  return gulp.src(paths.images.png)
+    .pipe(newer(paths.images.dest)) // only process newer images.
     .pipe(responsive({
       '**/*.png': [{
         // Keeping original sizes, but make sure sizes are smaller by setting
@@ -106,36 +113,41 @@ gulp.task('images', ['jpgImages', 'pngImages']);
 
 export function styles() {
   return gulp.src(paths.styles.src, {sourcemaps: true})
+    .pipe(newer(paths.styles.dest))
     .pipe(cleanCss())
     .pipe(gzip())
     .pipe(gulp.dest(paths.styles.dest));
 }
 
-export function critical() {
-  return gulp.src('src/index.html')
-    .pipe(injectCss())
-    .pipe(htmlmin(htmlminOptions))
-    .pipe(gzip())
-    .pipe(gulp.dest('dist/'));
-}
-
 export function html() {
-  return gulp.src(['src/**/*.html', '!src/index.html'])
+  return gulp.src(paths.html.src)
+    .pipe(newer(paths.html.dest))
+    .pipe(injectCss()) // requires following comment in html file: <!-- inject-css path/to/critical.css -->
     .pipe(htmlmin(htmlminOptions))
     .pipe(gzip())
-    .pipe(gulp.dest('dist/'));
+    .pipe(gulp.dest(paths.html.dest));
 }
 
+//TODO: delete once migration to API is done. Delete src/data/**  as well.
 export function json() {
   return gulp.src('src/**/*.json')
     .pipe(gzip())
     .pipe(gulp.dest('dist/'));
 }
 
-// gulp series ensures tasks run in order, so clean task first, then all
-// others in parallel with gulp.parallel
-//const build = gulp.series(clean, gulp.parallel());
+export function watch() {
+  console.log("Watching: html styles and scripts. If images are added, run: gulp images");
+  gulp.watch(paths.scripts.src, scripts)
+    .on('change', (event) => {console.log(`File ${event.path} was ${event.type}, running task`)});
+  gulp.watch(paths.styles.src, styles)
+    .on('change', (event) => {console.log(`File ${event.path} was ${event.type}, running task`)});
+  gulp.watch(paths.html.src, html)
+    .on('change', (event) => {console.log(`File ${event.path} was ${event.type}, running task`)});
+}
+
+// TODO: Find a way to execute clean task before build task.
 gulp.task('build', ['scripts','styles','critical','html','json','images']);
 
 
+// TODO: set build as the default task
 //export default build;

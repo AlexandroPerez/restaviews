@@ -40,7 +40,7 @@ const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
  * Fetch all cuisines and update ONLY cuisine Filter Results options
  */
 const fetchCuisines = () => {
-  // TODO: convert into promise function (say no to callback hell)
+  // TODO: convert into promise function
   return DBHelper.fetchCuisines()
     .then(fillCuisinesHTML)
     .catch(console.log);
@@ -90,7 +90,7 @@ window.initMap = () => {
 /**
  * Update page and map markers for currenty selected restaurant filter options. Defaults
  * to all restaurants.
- * To be called from HTML file with each select's onchange property 
+ * To be called from HTML file with each select's onchange property
  * (currently cuisine and neighborhood select elements).
  */
 const updateRestaurants = () => {
@@ -223,7 +223,7 @@ const addMarkersToMap = (restaurants) => {
 /**
  * Implement lazy loading using an Intersection Observer. Fallback to no lazy loading
  * if feature is not supported by browser.
- * 
+ *
  * MUST be used after restaurant information has been populated on page by javascript. So use
  * as last function in promise chain
  */

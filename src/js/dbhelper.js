@@ -166,7 +166,7 @@ class DBHelper {
    * Fetch all cuisines using promises.
    * @returns A promise that resolves to an array of unique cuisines
    */
-  static fetchCuisines(callback) {
+  static fetchCuisines() {
     return DBHelper.fetchRestaurantsPromise()
       .then(restaurants => {
         // Get all cuisines from all restaurants
@@ -190,37 +190,68 @@ class DBHelper {
   }
 
   /**
-   * Restaurant page URL.
+   * Restaurant page URL. It uses restaurant.id to create URL.
    */
   static urlForRestaurant(restaurant) {
     return (`./restaurant.html?id=${restaurant.id}`);
   }
 
   /**
-   * Restaurant image URL.
-   * I edited the helper because code should be reusable! Right? ;)
+   * Restaurant image placeholder image URL for lazy loading. It uses restaurant.photograph
+   * and fallbacks to restaurant.id if former is missing.
    */
   static imageHolderUrlForRestaurant(restaurant) {
-    // return a tyny image as placeholder for lazy loading. Default to restaurant id, in case photograph is missing.
-    let url = `/img/${(restaurant.photograph||restaurant.id)}-placeholder.jpg` 
+    let url = `/img/${(restaurant.photograph||restaurant.id)}-placeholder.jpg`
     return url;
   }
-   static imageUrlForRestaurant(restaurant) {
-    // default to medium sized image. Default to restaurant id, in case photograph is missing.
+
+  /**
+   * Restaurant image URL. It defaults to a medium sized image. It uses restaurant.photograph
+   * and fallbacks to restaurant.id if former is missing.
+   */
+  static imageUrlForRestaurant(restaurant) {
     let url = `/img/${(restaurant.photograph||restaurant.id)}-medium.jpg`;
     return url;
   }
+
+  /**
+   * Restaurant srcset attribute for browser to decide best resolution. It uses restaurant.photograph
+   * and fallbacks to restaurant.id if former is missing.
+   */
   static imageSrcsetForRestaurant(restaurant) {
-    // default to medium sized image. Default to restaurant id, in case photograph is missing.
     const imageSrc = `/img/${(restaurant.photograph||restaurant.id)}`;
     return `${imageSrc}-small.jpg 240w,
             ${imageSrc}-medium.jpg 400w,
             ${imageSrc}-large.jpg 800w`;
   }
+
+  /**
+   * Restaurant sizes attribute so browser knows image sizes before deciding wich image to download
+   * with srcset. It uses restaurant.photograph and fallbacks to restaurant.id if former is missing.
+   */
   static imageSizesForRestaurant(restaurant) {
     return `(max-width: 320px) 240px,
             (max-width: 599px) 500px,
             400px`;
+  }
+
+  /**
+   * Get date in format "Month DD, YYYY" from valid timestamp or date string
+   *
+   * @param {(number|string)} timestamp A valid timestamp or date string
+   */
+  static getDate(timestamp) {
+    const date = new Date(timestamp);
+    const months = [
+      'January', 'February', 'March',
+      'April', 'May', 'June',
+      'July', 'August', 'September',
+      'October', 'November', 'December'
+    ];
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${month} ${day}, ${year}`;
   }
 
   /**
