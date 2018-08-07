@@ -1,35 +1,29 @@
-var staticCacheName = 'restaviews-static-v1.0';
+// var staticCacheName = 'restaviews-static-v1.0'; //TODO: What is this doing here???
 /**
  * Common database helper functions.
  */
 class DBHelper {
 
-  /**
-   * Database URL.
-   * Change this to restaurants.json file location on your server.
-   */
+  //TODO: old database url, delete after removing other old methods. See todos below.
   static get DATABASE_URL() {
-    /* Fixed so that regardless of location, the database
-     * can be accessed. Previous code:
-     *
-     *    const port = 8000 // Change this to your server port
-     *    return `http://localhost:${port}/data/restaurants.json`;
-     *
-     */
-    //TODO: Change returned URL so that it can be used to access API in port 1337
     const protocol = window.location.protocol;
     const host =  window.location.host;
     return `${protocol}//${host}/data/restaurants.json`;
   }
+  static get API_URL() {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = 1337; // change this if port number of your sails server is different.
+    return `${protocol}//${hostname}:${port}`;
+  }
 
+  // TODO: replace old fetchRestaurants() with this new promise based function.
   /**
    * Fetch all restaurants
    * @returns {Promise.<Object[]>} A promise that resolves to an Array of restaurant objects (parsed json response).
    */
   static fetchRestaurantsPromise() {
-    // TODO: use DBHelper.DATABASE_URL
-    // TODO: replace old fetchRestaurants() with this new promise based function.
-    return fetch('http://localhost:1337/restaurants')
+    return fetch(`${DBHelper.API_URL}/restaurants`)
       .then(response => {
         if (!response.ok) {
           throw Error(`Fetch request for ${response.url} failed with code: ${response.status}`);
@@ -39,9 +33,12 @@ class DBHelper {
       .catch(console.log);
   }
 
+  // TODO: This is the old fetchRestaurants method. Kept for other two methods
+  // (fetchRestaurantByCuisine and fetchRestaurantByNeighborhood) that still rely
+  // on it, but are never used. DELETE if no longer needed.
+  // Still relies on the old DATABASE_URL (/data/restaurants.josn)
   /**
-   * Fetch all restaurants.
-   * @param {function} callback callback(error, restaurants)
+   * Fetch all restaurants using an XMLhttpRequest.
    */
   static fetchRestaurants(callback) {
     let xhr = new XMLHttpRequest();
@@ -60,24 +57,38 @@ class DBHelper {
   }
 
   /**
-   * Fetch a restaurant by its ID.
+   * Fetch a restaurant by its ID using a Promise. Resolves to a restaurant object.
+   *
+   * @param {(string|number)} id a valid restaurant id.
    */
-  static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        const restaurant = restaurants.find(r => r.id == id);
-        if (restaurant) { // Got the restaurant
-          callback(null, restaurant);
-        } else { // Restaurant does not exist in the database
-          callback('Restaurant does not exist', null);
+  static fetchRestaurantById(id) {
+    return fetch(`${DBHelper.API_URL}/restaurants/${id}`)
+      .then(response => {
+        if (!response.ok) {
+          throw Error(`Fetch Restaurant by Id request for ${response.url} failed with code: ${response.status}`);
         }
-      }
-    });
+        return response.json();
+      })
+      .catch(console.log);
   }
 
+  /**
+   * Fetch all reviews for a Restaurant by its id using Promises. Resolves to an Array of reviews objects.
+   *
+   * @param {(string|number)} id a valid restaurant id
+   */
+  static fetchReviewsByRestaurantId(id) {
+    return fetch(`${DBHelper.API_URL}/reviews/?restaurant_id=${id}`)
+      .then(response => {
+        if (!response.ok) {
+          throw Error(`Fetch Reviews By Restaurant Id request for ${response.url} failed with code: ${response.status}`);
+        }
+        return response.json();
+      })
+      .catch(console.log);
+  }
+
+  // TODO: This method is never used. Delete if not needed.
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
    */
@@ -94,6 +105,7 @@ class DBHelper {
     });
   }
 
+  // TODO: This method is never used. Delete if not needed.
   /**
    * Fetch restaurants by a neighborhood with proper error handling.
    */
@@ -116,7 +128,6 @@ class DBHelper {
    * @param {string} neighborhood neighborhood filter
    * @returns {Promise.<Object[]>} A promise that resolves to an Array of filtered restaurants.
    */
-  //static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
   static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood) {
     return DBHelper.fetchRestaurantsPromise()
       .then(restaurants => {
@@ -128,23 +139,7 @@ class DBHelper {
           restaurants = restaurants.filter(r => r.neighborhood == neighborhood);
         }
         return restaurants;
-      });
-
-    /*// Fetch all restaurants
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        let results = restaurants
-        if (cuisine != 'all') { // filter by cuisine
-          results = results.filter(r => r.cuisine_type == cuisine);
-        }
-        if (neighborhood != 'all') { // filter by neighborhood
-          results = results.filter(r => r.neighborhood == neighborhood);
-        }
-        callback(null, results);
-      }
-    });/** */
+      }).catch(console.log);
   }
 
   /**
@@ -175,18 +170,6 @@ class DBHelper {
         const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
         return uniqueCuisines;
       }).catch(console.log);
-    // Fetch all restaurants
-    /*DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        // Get all cuisines from all restaurants
-        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type)
-        // Remove duplicates from cuisines
-        const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
-        callback(null, uniqueCuisines);
-      }
-    });/** */
   }
 
   /**

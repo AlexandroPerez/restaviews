@@ -2,55 +2,60 @@ let restaurant;
 var map;
 
 /**
- * Initialize Google map, called from HTML.
+ * Populate restaurant and review information, and initialize Google map.
+ * To be called from HTML deferred script as a callback in Google Maps API as initMap
+ * (not window.initMap).
  */
 window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
+  // Use a promise chain to populate restaurant info. Each function pipes the restaurant object
+  // to the next one. All Functions should pipe the argument to make it easier to execute a Promise chain.
+  fetchRestaurantFromURL()
+    .then(fillBreadcrumb)
+    .then(fillRestaurantHTML)
+    .then(fillRestaurantHoursHTML)
+    .then(createMap)
+    .then(fillReviewsHTML)
+    .catch(console.log);
+}
+
+/**
+ *
+ * @param {{name: string, latlng: {lat: number, lng: number}}} restaurant object with at least the above restaurant information.
+ * @returns {Object} returns/pipes **restaurant** argument same way it was passed to promise chain.
+ */
+const createMap = (restaurant) => {
+  // Create new google map
+  self.map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 16,
+    center: restaurant.latlng,
+    scrollwheel: false
   });
-}
+  // Add marker to map
+  DBHelper.mapMarkerForRestaurant(restaurant, self.map);
+  // return restaurant object to promise chain
+  return restaurant;
+};
 
 /**
- * Get current restaurant from page URL.
+ * Get current restaurant from page URL, if any. Returns a Promise that resolves to a restaurant object,
+ * or rejects it if id isn't pressent as a parameter or is invalid.
  */
-fetchRestaurantFromURL = (callback) => {
-  if (self.restaurant) { // restaurant already fetched!
-    console.log("Restaurants was already fetched! How?");
-    callback(null, self.restaurant)
-    return;
-  }
-  console.log("Restaurants is never fetched before loading page! Duh!!");
+const fetchRestaurantFromURL = () => {
   const id = getParameterByName('id');
-  if (!id) { // no id found in URL
-    error = 'No restaurant id in URL'
-    callback(error, null);
-  } else {
-    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-      self.restaurant = restaurant;
-      if (!restaurant) {
-        console.error(error);
-        return;
-      }
-      fillRestaurantHTML();
-      callback(null, restaurant)
-    });
+  if (!id) {
+    return Promise.reject('No restaurant id in URL');
   }
+
+  return DBHelper.fetchRestaurantById(id);
 }
 
 /**
- * Create restaurant HTML and add it to the webpage
+ * Create restaurant HTML and add it to the webpage. Pipes argument back.
+ *
+ * @param {{id: number, name: string, address: string, cuisine_type: string, photograph: number}} restaurant object with at least the above restaurant information
+ * @returns {Object} returns/pipes restaurant argument same way it was passed.
  */
-fillRestaurantHTML = (restaurant = self.restaurant) => {
+const fillRestaurantHTML = (restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
@@ -68,18 +73,21 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
 
-  // fill operating hours
-  if (restaurant.operating_hours) {
-    fillRestaurantHoursHTML();
-  }
-  // fill reviews
-  fillReviewsHTML();
+  return restaurant;
 }
 
 /**
- * Create restaurant operating hours HTML table and add it to the webpage.
+ * if restaurant.operating_hours is defined, create restaurant operating hour's HTML table and add it to the webpage.
+ *
+ * @param {{?operating_hours: {weekday: string}}} restaurant
+ * @returns {Object} returns/pipes **restaurant** argument same way it was passed.
  */
-fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
+const fillRestaurantHoursHTML = (restaurant) => {
+  let operatingHours = restaurant.operating_hours;
+  // if there are no operating_hours, exit to promise chain
+  if (!operatingHours) {
+    return restaurant;
+  }
   const hours = document.getElementById('restaurant-hours');
   for (let key in operatingHours) {
     const row = document.createElement('tr');
@@ -98,31 +106,37 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 
     hours.appendChild(row);
   }
+  return restaurant;
 }
 
-//TODO: don't use self.restaurant.review as default. Make sure it works in a promise chain.
 /**
- * Create all reviews HTML and add them to the webpage.
+ * Fetch and create all HTLM reviews for current restaurant.
  *
- * @param {{name: string, createdAt: number, rating: number, comments: string}[]} reviews Array of objects with at least the above review information.
+ * @param {{id: (number|string)}} restaurant object with at least the above restaurant information provided.
+ * @returns {Object} returns/pipes **restaurant** argument same way it was passed.
  */
-const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-  const container = document.getElementById('reviews-container');
-  const title = document.createElement('h2');
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
-
-  if (!reviews) {
-    const noReviews = document.createElement('p');
-    noReviews.innerHTML = 'No reviews yet!';
-    container.appendChild(noReviews);
-    return;
-  }
-  const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
-  });
-  container.appendChild(ul);
+const fillReviewsHTML = (restaurant) => {
+  DBHelper.fetchReviewsByRestaurantId(restaurant.id)
+    .then(reviews => {
+      const container = document.getElementById('reviews-container');
+      const title = document.createElement('h2');
+      title.innerHTML = 'Reviews';
+      container.appendChild(title);
+      // if no reviews, let user know, and exit sooner.
+      if (!reviews) {
+        const noReviews = document.createElement('p');
+        noReviews.innerHTML = 'No reviews yet!';
+        container.appendChild(noReviews);
+        return;
+      }
+      const ul = document.getElementById('reviews-list');
+      reviews.forEach(review => {
+        ul.appendChild(createReviewHTML(review));
+      });
+      container.appendChild(ul);
+    })
+    .catch(console.log);
+  return restaurant;
 }
 
 /**
@@ -158,8 +172,9 @@ const createReviewHTML = (review) => {
  * Add restaurant name to the breadcrumb navigation menu
  *
  * @param {{name: string}} restaurant object with at least the above restaurant information
+ * @returns {Object} returns/pipes **restaurant** argument same way it was passed to promise chain.
  */
-const fillBreadcrumb = (restaurant=self.restaurant) => {
+const fillBreadcrumb = (restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   // aria says we have to provide a last <a> element with
@@ -171,14 +186,15 @@ const fillBreadcrumb = (restaurant=self.restaurant) => {
   a.innerHTML = restaurant.name;
   li.appendChild(a);
   breadcrumb.appendChild(li);
+  return restaurant;
 }
 
 /**
- * Get value from a parameter in URL.
+ * Get value from a parameter in a URL. Default url is window.location.href.
+ *
+ * @param {string} name parameter's name
  */
-const getParameterByName = (name, url) => {
-  if (!url)
-    url = window.location.href;
+const getParameterByName = (name, url = window.location.href) => {
   name = name.replace(/[\[\]]/g, '\\$&');
   const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
     results = regex.exec(url);

@@ -1,6 +1,3 @@
-let restaurants,
-  neighborhoods,
-  cuisines; // these variables may not be needed any more.
 var map; // Global variable to hold Google Maps information
 self.markers = []; // Global variable to hold current map markers.
 
@@ -24,9 +21,9 @@ const fetchNeighborhoods = () => {
 
 /**
  * Set neighborhoods filter option's HTML
- * @param {Array.<string>} neighborhoods Array of neighborhood strings. Default self.neighborhoods
+ * @param {Array.<string>} neighborhoods Array of neighborhood strings.
  */
-const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
+const fillNeighborhoodsHTML = (neighborhoods) => {
   const select = document.getElementById('neighborhoods-select');
   neighborhoods.forEach(neighborhood => {
     const option = document.createElement('option');
@@ -40,25 +37,16 @@ const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
  * Fetch all cuisines and update ONLY cuisine Filter Results options
  */
 const fetchCuisines = () => {
-  // TODO: convert into promise function
   return DBHelper.fetchCuisines()
     .then(fillCuisinesHTML)
     .catch(console.log);
-  /*DBHelper.fetchCuisines((error, cuisines) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.cuisines = cuisines;
-      fillCuisinesHTML();
-    }
-  });/** */
 }
 
 /**
  * Set cuisines filter result's HTML.
- * @param {Array.<string>} cuisines Array of cuisine strings. Default self.cuisines
+ * @param {Array.<string>} cuisines Array of cuisine strings.
  */
-const fillCuisinesHTML = (cuisines = self.cuisines) => {
+const fillCuisinesHTML = (cuisines) => {
   const select = document.getElementById('cuisines-select');
 
   cuisines.forEach(cuisine => {
@@ -110,18 +98,6 @@ const updateRestaurants = () => {
     .then(addMarkersToMap)
     .then(lazyLoadImages)
     .catch(console.log);
-
-  // After list of restaurants is populated, implement lazy loading of images
-  //lazyLoadImages();
-  //addMarkersToMap();
-  /*DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      resetRestaurants(restaurants);
-      fillRestaurantsHTML();
-    }
-  });/** */
 }
 
 /**
@@ -131,14 +107,12 @@ const updateRestaurants = () => {
  */
 const resetRestaurants = (restaurants) => {
   // Remove all restaurants from html list
-  // self.restaurants = []; //TODO: needed?
   const ul = document.getElementById('restaurants-list');
   ul.innerHTML = '';
 
   // Remove all map markers
   self.markers.forEach(m => m.setMap(null));
   self.markers = [];
-  //self.restaurants = restaurants; //TODO: needed?
 
   // return restaurants with no changes. Just pipe it to the next promise chain
   return restaurants;
