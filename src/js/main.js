@@ -2,65 +2,11 @@ var map; // Global variable to hold Google Maps information
 self.markers = []; // Global variable to hold current map markers.
 
 /**
- * Fetch neighborhoods and cuisines as soon as the page is loaded, and update filter
- * options ONLY.
- */
-document.addEventListener('DOMContentLoaded', (event) => {
-  fetchNeighborhoods();
-  fetchCuisines();
-});
-
-/**
- * Fetch all neighborhoods and update ONLY neighborhood Filter Results options.
- */
-const fetchNeighborhoods = () => {
-  return DBHelper.fetchNeighborhoods()
-    .then(fillNeighborhoodsHTML)
-    .catch(console.log);
-}
-
-/**
- * Set neighborhoods filter option's HTML
- * @param {Array.<string>} neighborhoods Array of neighborhood strings.
- */
-const fillNeighborhoodsHTML = (neighborhoods) => {
-  const select = document.getElementById('neighborhoods-select');
-  neighborhoods.forEach(neighborhood => {
-    const option = document.createElement('option');
-    option.innerHTML = neighborhood;
-    option.value = neighborhood;
-    select.append(option);
-  });
-}
-
-/**
- * Fetch all cuisines and update ONLY cuisine Filter Results options
- */
-const fetchCuisines = () => {
-  return DBHelper.fetchCuisines()
-    .then(fillCuisinesHTML)
-    .catch(console.log);
-}
-
-/**
- * Set cuisines filter result's HTML.
- * @param {Array.<string>} cuisines Array of cuisine strings.
- */
-const fillCuisinesHTML = (cuisines) => {
-  const select = document.getElementById('cuisines-select');
-
-  cuisines.forEach(cuisine => {
-    const option = document.createElement('option');
-    option.innerHTML = cuisine;
-    option.value = cuisine;
-    select.append(option);
-  });
-}
-
-/**
- * Initialize Google map, set markers its markers, and populate restaurant list.
+ * Initialize Google map, set its markers, and populate restaurant list.
  * To be called from HTML deferred script as a callback in Google Maps API as initMap
- * (not window.initMap).
+ * (not window.initMap). Example:
+ *                                                                                                                            ↓↓↓↓↓↓↓
+ * <script async defer src="https://maps.googleapis.com/maps/api/js?key=<key>&libraries=places&language=en&region=US&callback=initMap"></script>
  */
 window.initMap = () => {
   let loc = {
@@ -72,16 +18,73 @@ window.initMap = () => {
     center: loc,
     scrollwheel: false
   });
-  updateRestaurants();
+  // Fetch all restaurants when initializing map (main page is loaded for the first time)
+  // and populate filter options, update restaurant list and map markers accordingly
+  DBHelper.fetchRestaurantsPromise()
+    .then(fillNeighborhoodsHTML)
+    .then(fillCuisinesHTML)
+    .then(updateRestaurants)
+    .catch(console.log);
 }
 
 /**
- * Update page and map markers for currenty selected restaurant filter options. Defaults
- * to all restaurants.
- * To be called from HTML file with each select's onchange property
- * (currently cuisine and neighborhood select elements).
+ * Set neighborhoods filter option's HTML.
+ *
+ * @param {Array.<{neighborhood: string}>} restaurants Array of restaurant objects with at least above information.
+ * @returns {Object[]} returns/pipes **restaurants** argument same way it was passed back to promise chain.
  */
-const updateRestaurants = () => {
+const fillNeighborhoodsHTML = (restaurants) => {
+  const neighborhoods = DBHelper.getNeighborhoods(restaurants);
+  const select = document.getElementById('neighborhoods-select');
+  neighborhoods.forEach(neighborhood => {
+    const option = document.createElement('option');
+    option.innerHTML = neighborhood;
+    option.value = neighborhood;
+    select.append(option);
+  });
+  return restaurants;
+}
+
+/**
+ * Set cuisines filter result's HTML.
+ * @param {Array.<{cuisine_type: string}>} restaurants Array or restaurant objects with at least the above information.
+ * @returns {Object[]} returns/pipes **restaurants** argument same way it was passed back to promise chain.
+*/
+const fillCuisinesHTML = (restaurants) => {
+  const cuisines = DBHelper.getCuisines(restaurants);
+  const select = document.getElementById('cuisines-select');
+  cuisines.forEach(cuisine => {
+    const option = document.createElement('option');
+    option.innerHTML = cuisine;
+    option.value = cuisine;
+    select.append(option);
+  });
+  return restaurants;
+}
+
+/**
+ * Update restaurant list and map markers for currenty selected restaurant filter options. If an Array of restaurant objects
+ * is passed, that will be used to update list and markers in map. This can be used to populate list and map markers when page
+ * is loaded for the first time, or when restaurants had been previously fetched in promise chain.
+ *
+ * Otherwise restaurants will be fetched from API, which can be used when filter options are selected, and list and markers need
+ * to fetch API data again.
+ *
+ * To be called from HTML file with each select's onchange property.
+ *
+ * @param {Array.<Object>} restaurants Optional array of restaurant objects. Pass this argument if restaurants have been fetched in promise chain already.
+ */
+const updateRestaurants = (restaurants = null) => {
+  // if restaurants argument is passed, then page is being loaded for the first time, or
+  // restaurants have been fetched already in promise chain.
+  if (restaurants) {
+    return Promise.resolve(restaurants)
+    .then(fillRestaurantsHTML)
+    .then(addMarkersToMap)
+    .then(lazyLoadImages)
+    .catch(console.log);
+  }
+  // Otherwise, a filter option called this function, and data needs to be fetched and updated.
   const cSelect = document.getElementById('cuisines-select');
   const nSelect = document.getElementById('neighborhoods-select');
 
@@ -92,7 +95,7 @@ const updateRestaurants = () => {
   const neighborhood = nSelect[nIndex].value;
 
   // TODO: conver to promise base function
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
+  return DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
     .then(resetRestaurants)
     .then(fillRestaurantsHTML)
     .then(addMarkersToMap)

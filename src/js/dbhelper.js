@@ -143,7 +143,7 @@ class DBHelper {
   }
 
   /**
-   * Fetch all neighborhoods using promises
+   * Fetch a list of unique neighborhoods from API
    * @returns A promise that resolves to an array of unique neighborhoods
    */
   static fetchNeighborhoods() {
@@ -158,7 +158,19 @@ class DBHelper {
   }
 
   /**
-   * Fetch all cuisines using promises.
+   * Get a list of unique neighborhoods from all restaurants.
+   *
+   * @param {Array.<{ neighborhood: string}>} restaurants Array of restaurant objects with at least above information.
+   */
+  static getNeighborhoods(restaurants) {
+    const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
+    // Remove duplicates from neighborhoods
+    const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
+    return uniqueNeighborhoods;
+  }
+
+  /**
+   * Fetch a list of unique cuisines from API.
    * @returns A promise that resolves to an array of unique cuisines
    */
   static fetchCuisines() {
@@ -170,6 +182,18 @@ class DBHelper {
         const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
         return uniqueCuisines;
       }).catch(console.log);
+  }
+
+  /**
+   * Get a list of unique cuisines from all restaurants.
+   *
+   * @param {Array.<{cuisine_type: string}>} restaurants Array of restaurant objects with at least above information.
+   */
+  static getCuisines(restaurants) {
+    const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
+    // Remove duplicates from cuisines
+    const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
+    return uniqueCuisines;
   }
 
   /**
