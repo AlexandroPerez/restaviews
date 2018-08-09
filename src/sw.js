@@ -1,5 +1,5 @@
 // Increase version number for any change to Service Worker
-const staticCacheName = 'restaviews-static-v1.1';
+const staticCacheName = 'restaviews-static-v1.2';
 const contentImgsCache = 'restaviews-content-imgs';
 var allCaches = [
   staticCacheName,
@@ -17,7 +17,13 @@ self.addEventListener('install', function(event) {
         '/css/styles-medium.css',
         '/js/dbhelper.js',
         '/js/main.js',
-        '/js/restaurant_info.js'
+        '/js/restaurant_info.js',
+        // Google maps resources and fonts
+        'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700',
+        'https://fonts.gstatic.com/s/roboto/v18/KFOmCnqEu92Fr1Mu4mxK.woff2',
+        'https://fonts.gstatic.com/s/roboto/v18/KFOlCnqEu92Fr1MmEU9fBBc4.woff2'
+
+
       ]);
     })
   );
@@ -124,9 +130,15 @@ function serveDB(request) {
 
 // Cache only one type of image when requested
 function serveImage(request) {
+  let imageStorageUrl = request.url;
+
+  // placeholder images (used for lazy loading) will be stored in cache in their
+  // original request.url. So if image is not a placeholder:
+  if ( imageStorageUrl.indexOf("placeholder") < 0 ) {
   // Make a new URL with a stripped suffix and extension from the request url
   // i.e. /img/1-medium.jpg  ->  /img/1
-  const imageStorageUrl = request.url.replace(/-small\.\w{3}|-medium\.\w{3}|-large\.\w{3}/i, '');
+    imageStorageUrl = imageStorageUrl.replace(/-small\.\w{3}|-medium\.\w{3}|-large\.\w{3}/i, '');
+  }
 
   return caches.open(contentImgsCache).then(function(cache) {
     return cache.match(imageStorageUrl).then(function(response) {
