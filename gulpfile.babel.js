@@ -8,6 +8,7 @@ import cleanCss from 'gulp-clean-css';
 import newer from 'gulp-newer';
 import rename from 'gulp-rename';
 import htmlmin from 'gulp-htmlmin';
+import runSequence from 'run-sequence';
 
 const paths = {
   styles: {
@@ -19,9 +20,14 @@ const paths = {
     dest: 'dist/'
   },
   images: {
-    jpg: 'src/img/**/*.jpg',
-    png: 'src/img/**/*.png',
-    dest: 'dist/img/'
+    jpg: {
+      src: 'src/img/**/*.jpg',
+      dest: 'dist/img/'
+    },
+    icon: {
+      src: 'src/img/icons/icon.png', // icon dimensions should be 512 x 512 or greater, and of png format.
+      dest: 'dist/img/icons/'
+    }
   },
   html: {
     src: ['src/**/*.html'],
@@ -37,7 +43,7 @@ const htmlminOptions = {
 };
 
 // Small tasks I can use arrow functions
-export const clean = () => del([ 'dist/' ]);
+export const clean = (done) => del([ 'dist/' ], done);
 
 export function scripts() {
   return gulp.src(paths.scripts.src, {sourcemaps: true})
@@ -48,9 +54,9 @@ export function scripts() {
 }
 
 export function jpgImages() {
-  return gulp.src(paths.images.jpg)
+  return gulp.src(paths.images.jpg.src)
     .pipe(rename( {suffix: '-large'} )) // necessary for gulp-newer to work, so it can compare
-    .pipe(newer(paths.images.dest))     // against a single destination file. Basically adding one
+    .pipe(newer(paths.images.jpg.dest))     // against a single destination file. Basically adding one
     .pipe(rename( opt => {              // of the suffixes on the fly, then renaming back.
       opt.basename = opt.basename.replace('-large', '');
       return opt;
@@ -84,32 +90,49 @@ export function jpgImages() {
       // Strip all metadata
       withMetadata: false
     }))
-    .pipe(gulp.dest(paths.images.dest));
+    .pipe(gulp.dest(paths.images.jpg.dest));
 }
 
-export function pngImages() {
-//return gulp.src('src/img/**/*.png')
-  return gulp.src(paths.images.png)
-    .pipe(newer(paths.images.dest)) // only process newer images.
+export function icons() {
+  // Create different size icons for app. Original should be 512x512 or greater.
+  return gulp.src(paths.images.icon.src)
     .pipe(responsive({
       '**/*.png': [{
-        // Keeping original sizes, but make sure sizes are smaller by setting
-        // progressive to false
-        progressive: false
+        width: 72,
+        rename: { suffix: '-72x72'}
+      }, {
+        width: 96,
+        rename: { suffix: '-96x96'}
+      },  {
+        width: 128,
+        rename: { suffix: '-128x128'}
+      },  {
+        width: 144,
+        rename: { suffix: '-144x144'}
+      },  {
+        width: 152,
+        rename: { suffix: '-152x152'}
+      },  {
+        width: 192,
+        rename: { suffix: '-192x192'}
+      },  {
+        width: 384,
+        rename: { suffix: '-384x384'}
+      },  {
+        width: 512,
+        rename: { suffix: '-512x512'}
       }]
     }, {
       // Global configuration for all images
-
-      // needed to avoid errors when images aren't "newer"
-      // since gulp-responsive won't have anything to do.
-      errorOnUnusedConfig: false,
       // Strip all metadata
-      withMetadata: false
+      withMetadata: false,
+      // Images are smaller in size if progressive is set to false
+      progressive: false
     }))
-    .pipe(gulp.dest(paths.images.dest));
+    .pipe(gulp.dest(paths.images.icon.dest));
 }
 
-gulp.task('images', ['jpgImages', 'pngImages']);
+gulp.task('images', ['jpgImages', 'icons']);
 
 export function styles() {
   return gulp.src(paths.styles.src, {sourcemaps: true})
@@ -145,9 +168,12 @@ export function watch() {
     .on('change', (event) => {console.log(`File ${event.path} was ${event.type}, running task`)});
 }
 
-// TODO: Find a way to execute clean task before build task.
-gulp.task('build', ['scripts','styles','critical','html','json','images']);
+export function build(done) {
+  runSequence(
+    'clean',
+    ['scripts','styles','html','json','images'],
+    done
+  );
+}
 
-
-// TODO: set build as the default task
-//export default build;
+export default build;
