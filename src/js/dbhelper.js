@@ -19,17 +19,44 @@ class DBHelper {
 
   // TODO: replace old fetchRestaurants() with this new promise based function.
   /**
-   * Fetch all restaurants
-   * @returns {Promise.<Object[]>} A promise that resolves to an Array of restaurant objects (parsed json response).
+   * Fetch all restaurants from API, and store results in indexedDB. If offline, fallback to indexedDB.
+   * @returns {Promise.<Object[]>} A promise that resolves to an Array of restaurant objects.
    */
   static fetchRestaurantsPromise() {
     return fetch(`${DBHelper.API_URL}/restaurants`)
       .then(response => {
         if (!response.ok) {
-          throw Error(`Fetch request for ${response.url} failed with code: ${response.status}`);
+          return Promise.reject(`API Fetch request to ${response.url} failed with code: ${response.status}`);
         }
         return response.json();
       })
+      .then(
+        function onfulfilled(restaurants) {
+          // TODO: after successfully fetching restaurants from API,
+          // store/update local indexedDB restaurants
+          dbPromise.then(db => {
+            const tx = db.transaction('restaurants', 'readwrite');
+            const restaurantStore = tx.objectStore('restaurants');
+            restaurantStore.clear();
+
+            restaurants.forEach(restaurant => {
+              restaurantStore.put(restaurant);
+            });
+
+          });
+          return restaurants;
+        },
+        function onrejected(error) {
+          //TODO: handle offline mode (couldn't fetch restaurants from API)
+          console.log(error, '\nTrying local indexedDB database...');
+          return dbPromise.then(db => {
+            const tx = db.transaction('restaurants');
+            const restaurantStore = tx.objectStore('restaurants');
+
+            return restaurantStore.getAll();
+          })
+          .catch(console.log);
+        })
       .catch(console.log);
   }
 
