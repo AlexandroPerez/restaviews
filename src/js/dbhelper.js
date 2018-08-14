@@ -37,14 +37,19 @@ class DBHelper {
           dbPromise.then(db => {
             const tx = db.transaction('restaurants', 'readwrite');
             const restaurantStore = tx.objectStore('restaurants');
-            restaurantStore.clear();
-
             restaurants.forEach(restaurant => {
-              restaurantStore.put(restaurant);
+              restaurantStore.get(restaurant.id)
+                .then(stored => {
+                  // only update IDB restaurant data, if data is new or has been updated.
+                  // If restaurant is not stored OR stored updated date doesn't match, create/update.
+                  if (!stored || stored.updatedAt !== restaurant.updatedAt) {
+                    restaurantStore.put(restaurant);
+                  }
+                });
             });
-
-          });
-          return restaurants;
+            return tx.complete; // make sure readwrite transaction was successful.
+          }).catch(console.log);
+          return restaurants; // Return restaurants fetched from network.
         },
         function onrejected(error) {
           //TODO: handle offline mode (couldn't fetch restaurants from API)
