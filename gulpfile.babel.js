@@ -9,6 +9,7 @@ import newer from 'gulp-newer';
 import rename from 'gulp-rename';
 import htmlmin from 'gulp-htmlmin';
 import runSequence from 'run-sequence';
+import sourcemaps from 'gulp-sourcemaps';
 
 const paths = {
   styles: {
@@ -46,9 +47,11 @@ const htmlminOptions = {
 export const clean = (done) => del([ 'dist/' ], done);
 
 export function scripts() {
-  return gulp.src(paths.scripts.src, {sourcemaps: true})
+  return gulp.src(paths.scripts.src)
+    .pipe(sourcemaps.init())
     .pipe(newer(paths.scripts.dest))
     .pipe(uglify())
+    .pipe(sourcemaps.write('.'))
     .pipe(gzip())
     .pipe(gulp.dest(paths.scripts.dest));
 }
