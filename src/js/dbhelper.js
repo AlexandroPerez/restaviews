@@ -137,7 +137,7 @@ class DBHelper {
             return idbRestaurant;
           })
         }
-      )
+      );
   }
 
   /**
@@ -146,14 +146,53 @@ class DBHelper {
    * @param {(string|number)} id a valid restaurant id
    */
   static fetchReviewsByRestaurantId(id) {
+    id = Number(id); // Make sure id is a number. Strings will give an error in iDB.
     return fetch(`${DBHelper.API_URL}/reviews/?restaurant_id=${id}`)
       .then(response => {
         if (!response.ok) {
-          throw Error(`Fetch Reviews By Restaurant Id request for ${response.url} failed with code: ${response.status}`);
+          return Promise.reject(`API Fetch request to ${response.url} failed with code: ${response.status}`);
         }
         return response.json();
       })
-      .catch(console.log);
+      .then(
+        function onfulfilled(reviews) {
+          //TODO: after successfully fetching reviews from API,
+          // store/update local iDB reviews database
+          dbPromise.then(db => {
+            const tx = db.transaction('reviews', 'readwrite');
+            const reviewStore = tx.objectStore('reviews');
+            reviews.forEach(review => {
+              reviewStore.get(review.id)
+                .then(stored => {
+                  // only update iDB review data if data is new or has been updated.
+                  // if review is not stored OR stored updatedAt date doesn't match, create/update.
+                  if (!stored || stored.updatedAt !== review.updatedAt) {
+                    reviewStore.put(review);
+                  }
+                });
+            });
+            return tx.complete // make sure readwrite transaction was successful.
+          }).catch(console.error);
+
+          return reviews; // Return reviews fetched from network.
+        },
+        function onrejected(error) {
+          //TODO: handle offline mode (couldn't fetch reviews from API)
+          console.error(`${error}\n Trying local iDB database...`);
+          return dbPromise.then(db => {
+            const tx = db.transaction('reviews');
+            const reviewStore = tx.objectStore('reviews');
+            const restaurantIdIndex = reviewStore.index('restaurant_id');
+
+            return restaurantIdIndex.getAll(id)
+              .then(stored => {
+                //TODO: handle possible no match, or error
+                if (!stored || stored.length < 1) return Promise.reject('No reviews were found in iDB either. No way to know if Restaurant has reviews.');
+                return stored;
+              });
+          });
+        }
+      );
   }
 
   // TODO: This method is never used. Delete if not needed.

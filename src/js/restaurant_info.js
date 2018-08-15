@@ -116,16 +116,17 @@ const fillRestaurantHoursHTML = (restaurant) => {
  * @returns {Object} returns/pipes **restaurant** argument same way it was passed.
  */
 const fillReviewsHTML = (restaurant) => {
+  const container = document.getElementById('reviews-container');
+  const title = document.createElement('h2');
+  title.innerHTML = 'Reviews';
+  container.appendChild(title);
+
   DBHelper.fetchReviewsByRestaurantId(restaurant.id)
     .then(reviews => {
-      const container = document.getElementById('reviews-container');
-      const title = document.createElement('h2');
-      title.innerHTML = 'Reviews';
-      container.appendChild(title);
       // if no reviews, let user know, and exit sooner.
       if (!reviews) {
         const noReviews = document.createElement('p');
-        noReviews.innerHTML = 'No reviews yet!';
+        noReviews.innerHTML = 'No reviews yet! Be the first one!';
         container.appendChild(noReviews);
         return;
       }
@@ -135,7 +136,19 @@ const fillReviewsHTML = (restaurant) => {
       });
       container.appendChild(ul);
     })
-    .catch(console.log);
+    .catch(e => {
+      console.error(e);
+      // If no reviews could be fetched from API or iDB, handle error and let user know
+      const offline = document.createElement('p');
+      offline.classList.add('error');
+      offline.innerHTML = `Unfortunately we can't fetch any reviews at the moment. Please check back later when you're connection
+                         is back online.`;
+      container.appendChild(offline);
+      const message = document.createElement('p');
+      message.classList.add('message');
+      message.innerHTML = `You can stil leave a review, we'll add it for you once you're back online!!`;
+      container.appendChild(message);
+    });
   return restaurant;
 }
 

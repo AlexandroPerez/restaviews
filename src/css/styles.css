@@ -207,3 +207,16 @@
 select:focus, select:hover {
   background-color: #aadaff;
 }
+
+.error {
+  color: white;
+  background-color: #cb3939;
+  border-radius: 15px 0;
+  padding: 1em;
+}
+.message {
+  color: white;
+  background-color: #46ac4e;
+  padding: 1em;
+  border-radius: 15px 0;
+}

@@ -64,21 +64,21 @@
 }
 
 .inside #map-container {
-  top: 80px;
-  bottom: 0;
-  height: initial;
-  min-height: inherit;
-  width: calc(100vw - 420px);
+  top: 110px;
+  bottom: 0px;
+  /* height: calc(100vh - 210px); */
+  /* min-height: inherit; */
+  width: calc(100% - 420px);
   z-index: initial;
 }
 @media screen and (max-width: 640px) {
   .inside #map-container {
-    width: calc(100vw - 320px);
+    width: calc(100% - 320px);
   }
 }
 @media screen and (min-width: 641px) and (max-width: 840px) {
   .inside #map-container {
-    width: 50vw;
+    width: 50%;
   }
 }
 .inside #restaurant-container, .inside #reviews-container {
