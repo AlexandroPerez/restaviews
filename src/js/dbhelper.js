@@ -62,7 +62,7 @@ class DBHelper {
           })
           .catch(console.log);
         })
-      .catch(console.log);
+      .catch(console.error);
   }
 
   // TODO: This is the old fetchRestaurants method. Kept for other two methods
@@ -91,17 +91,53 @@ class DBHelper {
   /**
    * Fetch a restaurant by its ID using a Promise. Resolves to a restaurant object.
    *
-   * @param {(string|number)} id a valid restaurant id.
+   * @param {(number)} id a valid restaurant id.
    */
   static fetchRestaurantById(id) {
+    id = Number(id); // Make sure id is a number. Strings will give an error in iDB.
     return fetch(`${DBHelper.API_URL}/restaurants/${id}`)
       .then(response => {
         if (!response.ok) {
-          throw Error(`Fetch Restaurant by Id request for ${response.url} failed with code: ${response.status}`);
+          return Promise.reject(`API Fetch request to ${response.url} failed with code: ${response.status}`);
         }
         return response.json();
       })
-      .catch(console.log);
+      .then(
+        function onfulfilled(restaurant) {
+          //TODO: after successfully fetching restaurant from API,
+          // store/update local iDB restaurant database
+          dbPromise.then(db => {
+            const tx = db.transaction('restaurants', 'readwrite');
+            const restaurantStore = tx.objectStore('restaurants');
+            restaurantStore.get(restaurant.id)
+              .then(stored => {
+                // only update iDB restaurant data, if data is new or has been updated.
+                // if restaurant is not stored OR stored updated date doesn't match, create/update
+                if (!stored || stored.updatedAt !== restaurant.updatedAt) {
+                  restaurantStore.put(restaurant);
+                }
+              });
+            return tx.complete // make sure readwrite transaction was successful.
+          });
+          return restaurant; // Return restaurant fetched from network.
+        },
+        function onrejected(error) {
+          //TODO: handle offline mode (couldn't fetch restaurant from API)
+          console.error(`${error}\n Trying local indexedDB database...`);
+          return dbPromise.then(db => {
+            const tx = db.transaction('restaurants');
+            const restaurantStore = tx.objectStore('restaurants');
+
+            return restaurantStore.get(id);
+          })
+          .then(idbRestaurant => {
+            if (!idbRestaurant) {
+              return Promise.reject(`No match found for restaurant with id: ${id} in iDB either...`);
+            }
+            return idbRestaurant;
+          })
+        }
+      )
   }
 
   /**
