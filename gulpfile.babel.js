@@ -59,7 +59,7 @@ export function scripts() {
 export function jpgImages() {
   return gulp.src(paths.images.jpg.src)
     .pipe(rename( {suffix: '-large'} )) // necessary for gulp-newer to work, so it can compare
-    .pipe(newer(paths.images.jpg.dest))     // against a single destination file. Basically adding one
+    .pipe(newer(paths.images.jpg.dest)) // against a single destination file. Basically adding one
     .pipe(rename( opt => {              // of the suffixes on the fly, then renaming back.
       opt.basename = opt.basename.replace('-large', '');
       return opt;
@@ -162,15 +162,21 @@ export function json() {
 }
 
 export function watch() {
-  console.log("Watching: html styles and scripts. If images are added, run: gulp images");
-  gulp.watch(paths.scripts.src, scripts)
-    .on('change', (event) => {console.log(`File ${event.path} was ${event.type}, running task`)});
-  gulp.watch(paths.styles.src, styles)
-    .on('change', (event) => {console.log(`File ${event.path} was ${event.type}, running task`)});
-  gulp.watch(paths.html.src, html)
-    .on('change', (event) => {console.log(`File ${event.path} was ${event.type}, running task`)});
+  console.log("Watching ./src folder.");
+
+  const logEvent = event => {console.log(`File ${event.path} was ${event.type}, running specific task for it.`)};
+
+  gulp.watch(paths.scripts.src, scripts).on('change', logEvent);
+  gulp.watch(paths.styles.src, styles).on('change', logEvent);
+  gulp.watch(paths.html.src, html).on('change', logEvent);
+  gulp.watch(paths.images.jpg.src, styles).on('change', logEvent);
+  gulp.watch(paths.images.icon.src, icons).on('change', logEvent);
 }
 
+/** 
+ * done is an (arbitrary?) callback function that will be used to let gulp know the task is **done**. Gulp
+ * provides this callback function when executed in the CLI? i.e. $ gulp build
+ */
 export function build(done) {
   runSequence(
     'clean',

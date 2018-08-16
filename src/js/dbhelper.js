@@ -1,4 +1,3 @@
-// var staticCacheName = 'restaviews-static-v1.0'; //TODO: What is this doing here???
 /**
  * Common database helper functions.
  */
@@ -143,7 +142,7 @@ class DBHelper {
   /**
    * Fetch all reviews for a Restaurant by its id using Promises. Resolves to an Array of reviews objects.
    *
-   * @param {(string|number)} id a valid restaurant id
+   * @param {number} id a valid restaurant id
    */
   static fetchReviewsByRestaurantId(id) {
     id = Number(id); // Make sure id is a number. Strings will give an error in iDB.
@@ -249,6 +248,8 @@ class DBHelper {
       }).catch(console.log);
   }
 
+  // TODO: This method has been replaced by getNeighborhoods() to reduce
+  // fetch requests to the API. Delete if not needed anymore.
   /**
    * Fetch a list of unique neighborhoods from API
    * @returns A promise that resolves to an array of unique neighborhoods
@@ -265,7 +266,7 @@ class DBHelper {
   }
 
   /**
-   * Get a list of unique neighborhoods from all restaurants.
+   * Get a list of unique neighborhoods from provided restaurants.
    *
    * @param {Array.<{ neighborhood: string}>} restaurants Array of restaurant objects with at least above information.
    */
@@ -276,6 +277,8 @@ class DBHelper {
     return uniqueNeighborhoods;
   }
 
+  // TODO: This method has been replaced by getCuisines() to reduce 
+  // fetch requests to the API. Delete if not needed anymore.
   /**
    * Fetch a list of unique cuisines from API.
    * @returns A promise that resolves to an array of unique cuisines
@@ -292,7 +295,7 @@ class DBHelper {
   }
 
   /**
-   * Get a list of unique cuisines from all restaurants.
+   * Get a list of unique cuisines from provided restaurants.
    *
    * @param {Array.<{cuisine_type: string}>} restaurants Array of restaurant objects with at least above information.
    */
