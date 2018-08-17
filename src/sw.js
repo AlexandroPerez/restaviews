@@ -1,10 +1,14 @@
 // Increase version number for any change to Service Worker
-const staticCacheName = 'restaviews-static-v1.2';
+const staticCacheName = 'restaviews-static-v1.3';
 const contentImgsCache = 'restaviews-content-imgs';
 var allCaches = [
   staticCacheName,
   contentImgsCache
 ];
+
+// External Scripts can be imported into the service worker scope by using importScripts!!
+// see: https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/importScripts
+importScripts('js/vendor/idb.js', 'js/dbpromise.js');
 
 /** At Service Worker Install time, cache all static assets */
 self.addEventListener('install', function(event) {
@@ -15,15 +19,13 @@ self.addEventListener('install', function(event) {
         '/restaurant.html',
         '/css/styles.css',
         '/css/styles-medium.css',
+        '/js/offline.js',
+        '/js/vendor/idb.js',
+        '/img/icon_error.png',
         '/js/dbhelper.js',
+        '/js/dbpromise.js',
         '/js/main.js',
-        '/js/restaurant_info.js',
-        // Google maps resources and fonts
-        'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700',
-        'https://fonts.gstatic.com/s/roboto/v18/KFOmCnqEu92Fr1Mu4mxK.woff2',
-        'https://fonts.gstatic.com/s/roboto/v18/KFOlCnqEu92Fr1MmEU9fBBc4.woff2'
-
-
+        '/js/restaurant_info.js'
       ]);
     })
   );
@@ -51,7 +53,7 @@ self.addEventListener('fetch', function(event) {
 
   // only highjack request made to our app (not google maps for example)
   if (requestUrl.origin === location.origin) {
-    // TODO: handle request sent to /restaurant.html
+    // DONE: handle request sent to /restaurant.html
     // Since url has search params, it doesn't respond with the cached restaurant.html
     // (the url can't be used as a key) so make it respondWith it instead
     if (requestUrl.pathname.startsWith('/restaurant.html')) {
@@ -59,18 +61,20 @@ self.addEventListener('fetch', function(event) {
       return;
     }
 
-    // TODO: handle images
+    // DONE: handle images
     if (requestUrl.pathname.startsWith('/img')) {
       event.respondWith(serveImage(event.request));
       return;
     }
 
-    // TODO: handle database requests. see function definition below
-    if (requestUrl.pathname.startsWith('/data')) {
-      event.respondWith(serveDB(event.request));
-      return;
-    }
+    // DONE: handle database requests.
+    // Database is accessed by API, and requests are cached using iDB directly
+    // from the website. Since caching of json data to iDB can be done directly
+    // from the site, I implemented it outside the service worker scope.
   }
+
+  // TODO: if offline respond with a personilized script instead of Google Map's
+  // if (!navigator.onLine)
 
   // Default behavior: respond with cached elements, if any (google maps may implement their own?)
   event.respondWith(
@@ -79,35 +83,6 @@ self.addEventListener('fetch', function(event) {
     })
   );
 });
-
-/**
- * As of this writting, is a static .json file
- * so this code may need to change in future parts of the project
- * (if databases like mongodb or others are used for example?)
- *
- * Apparently it's better to serve content from cache first, otherwise user will
- * have to wait if connection is slow. This approach serves content from cache first
- * fetches request from network and then updates the cache. See link below.
- *
- * It may be worth trying to serve content only from the network, and cache it so it
- * can be used only if app is offline, or network has problems. But it may not be the best
- * approach, again, due to wait times in slow networks.
- *
- * see: https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/#on-network-response
- */
-
-// Cache on network response approach
-function serveDB(request) {
-  return caches.open(staticCacheName).then(function(cache) {
-    return cache.match(request).then(function(response) {
-      const networkFetch = fetch(request).then(function(networkResponse) {
-        cache.put(request, networkResponse.clone());
-        return networkResponse;
-      });
-      return response || networkFetch;
-    });
-  });
-}
 
 /**
  * This approach will strip the "-small", "-medium" and "-large" suffixes added to
@@ -132,6 +107,7 @@ function serveDB(request) {
 function serveImage(request) {
   let imageStorageUrl = request.url;
 
+  // DONE: Placeholder images should be cached without sripping anything.
   // placeholder images (used for lazy loading) will be stored in cache in their
   // original request.url. So if image is not a placeholder:
   if ( imageStorageUrl.indexOf("placeholder") < 0 ) {
@@ -151,5 +127,37 @@ function serveImage(request) {
         return networkResponse;
       });
     });
+  });
+}
+
+self.addEventListener('sync', event => {
+  if (event.tag == 'putSync') {
+    event.waitUntil(syncPutRequests());
+  }
+});
+
+// TODO: Listen to sync events made when a restaurant favorite button is toggled.
+function syncPutRequests() {
+  // open iDB, and process all put requests, clearing iDB when done.
+  return dbPromise.then(db => {
+    const tx = db.transaction('putRequests', 'readwrite');
+    const putRequestStore = tx.objectStore('putRequests');
+
+    // get all put requests stored while offline
+    putRequestStore.getAll()
+      .then(putRequests => {
+
+        // and make a PUT fetch request for each one.
+        putRequests.forEach(putRequest => {
+          console.log(`Processing ${putRequest}...`);
+          fetch(putRequest, {method: "PUT"});
+        });
+      })
+      .then(() => {
+        // clear iDB database if successful
+        putRequestStore.clear();
+      })
+      .catch(console.error);
+      return tx.complete;
   });
 }

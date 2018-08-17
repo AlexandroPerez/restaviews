@@ -25,6 +25,10 @@ const paths = {
       src: 'src/img/**/*.jpg',
       dest: 'dist/img/'
     },
+    png: {
+      src: 'src/img/**/*.png',
+      dest: 'dist/img/'
+    },
     icon: {
       src: 'src/img/icons/icon.png', // icon dimensions should be 512 x 512 or greater, and of png format.
       dest: 'dist/img/icons/'
@@ -54,6 +58,12 @@ export function scripts() {
     .pipe(sourcemaps.write('.'))
     .pipe(gzip())
     .pipe(gulp.dest(paths.scripts.dest));
+}
+
+export function pngImages() {
+  // just copy
+  return gulp.src(paths.images.png.src)
+    .pipe(gulp.dest(paths.images.png.dest));
 }
 
 export function jpgImages() {
@@ -135,7 +145,7 @@ export function icons() {
     .pipe(gulp.dest(paths.images.icon.dest));
 }
 
-gulp.task('images', ['jpgImages', 'icons']);
+gulp.task('images', ['jpgImages', 'pngImages', 'icons']);
 
 export function styles() {
   return gulp.src(paths.styles.src, {sourcemaps: true})
@@ -169,11 +179,12 @@ export function watch() {
   gulp.watch(paths.scripts.src, scripts).on('change', logEvent);
   gulp.watch(paths.styles.src, styles).on('change', logEvent);
   gulp.watch(paths.html.src, html).on('change', logEvent);
-  gulp.watch(paths.images.jpg.src, styles).on('change', logEvent);
+  gulp.watch(paths.images.jpg.src, jpgImages).on('change', logEvent);
+  gulp.watch(paths.images.png.src, pngImages).on('change', logEvent);
   gulp.watch(paths.images.icon.src, icons).on('change', logEvent);
 }
 
-/** 
+/**
  * done is an (arbitrary?) callback function that will be used to let gulp know the task is **done**. Gulp
  * provides this callback function when executed in the CLI? i.e. $ gulp build
  */

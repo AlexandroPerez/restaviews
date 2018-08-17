@@ -277,7 +277,7 @@ class DBHelper {
     return uniqueNeighborhoods;
   }
 
-  // TODO: This method has been replaced by getCuisines() to reduce 
+  // TODO: This method has been replaced by getCuisines() to reduce
   // fetch requests to the API. Delete if not needed anymore.
   /**
    * Fetch a list of unique cuisines from API.
@@ -389,12 +389,33 @@ class DBHelper {
   // to make it work offline
   /**
    * Mark Restaurant as favorite (true) or not (false) using Promises.
-   * 
-   * @param {number} Id of the restaurant.
-   * @param {boolean} favorite Whether restaurant should be marked as favorite or not.
+   *
+   * @param {number} id Id of the restaurant.
+   * @param {boolean} isFavorite Whether restaurant is favorite or not.
    */
-  static markFavorite(id, favorite) {
-    return fetch(`${DBHelper.API_URL}/restaurants/${id}/?is_favorite=${favorite}`)
+  static markFavorite(id, isFavorite) {
+    // Do not make a fetch request, but instead save url to iDB, reguister
+    // a background sync, and have the service worker fetch the request from iDB
+    // when a sync is triggered. 😎
+    const url = `${DBHelper.API_URL}/restaurants/${id}/?is_favorite=${isFavorite}`;
+
+    return dbPromise.then(db => {
+      const tx = db.transaction('putRequests', 'readwrite');
+      const putRequestStore = tx.objectStore('putRequests');
+
+      putRequestStore.add(url);
+
+      return tx.complete;
+    })
+    .then(() => {
+      // register sync only if put request was successfully stored in iDB
+      navigator.serviceWorker.ready.then(reg => reg.sync.register('putSync'));
+    }).catch(() => {
+      // TODO: if iDB couldn't be used, try a fetch request without background sync.
+    });
+
+    // return fetch(url, {method: "PUT"}).catch(console.error);
+
   }
 
 }

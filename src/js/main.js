@@ -180,15 +180,19 @@ const createRestaurantHTML = (restaurant) => {
   favorite.setAttribute("aria-pressed", restaurant.is_favorite || false); // false if undefined
 
   const toggleButton = function() {
-    let favorite = this.getAttribute("aria-pressed") === "true";
-    if (favorite === "true") {
+    const isFavorite = !(this.getAttribute("aria-pressed") === "true");
+    const id = this.dataset.restaurant_id;
+    this.setAttribute("aria-pressed", isFavorite);
+    DBHelper.markFavorite(id, isFavorite);
+    /*
+    if (favorite) {
       this.setAttribute("aria-pressed", "false");
       //TODO: make a handle request that sets restaurant as false or true
       // set restaurant as not favorite
     } else {
       this.setAttribute("aria-pressed", "true");
       //TODO: set restaurant as favorite
-    }
+    }*/
   };
   favorite.onclick = toggleButton;
   li.append(favorite);
@@ -275,4 +279,4 @@ function registerServiceWorker () {
   });
 }
 
-//registerServiceWorker();
+registerServiceWorker();
