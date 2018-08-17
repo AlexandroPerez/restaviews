@@ -171,6 +171,28 @@ const createRestaurantHTML = (restaurant) => {
   address.innerHTML = restaurant.address;
   li.append(address);
 
+  //TODO: add favorite toggle button. Use a button to get its accessibility advandages. For toggle buttons see:
+  //https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_button_role#Toggle_buttons
+  const favorite = document.createElement('button');
+  favorite.innerHTML = "&#x2764;";
+  favorite.classList.add('fav-toggle');
+  favorite.dataset.restaurant_id = restaurant.id;
+  favorite.setAttribute("aria-pressed", restaurant.is_favorite || false); // false if undefined
+
+  const toggleButton = function() {
+    let favorite = this.getAttribute("aria-pressed") === "true";
+    if (favorite === "true") {
+      this.setAttribute("aria-pressed", "false");
+      //TODO: make a handle request that sets restaurant as false or true
+      // set restaurant as not favorite
+    } else {
+      this.setAttribute("aria-pressed", "true");
+      //TODO: set restaurant as favorite
+    }
+  };
+  favorite.onclick = toggleButton;
+  li.append(favorite);
+
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
   more.href = DBHelper.urlForRestaurant(restaurant);

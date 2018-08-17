@@ -220,3 +220,29 @@ select:focus, select:hover {
   padding: 1em;
   border-radius: 15px 0;
 }
+
+.fav-toggle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 40px;
+  width: 40px;
+  margin: 0;
+  font-size: 2em;
+  border: none;
+  border-radius: 15px 0 15px 0;
+  background-color: #fff;
+  outline: none;
+  cursor: pointer;
+}
+.fav-toggle:focus,
+.fav-toggle:hover {
+  box-shadow: 0 0 3pt 2pt #ff000070;
+}
+
+.fav-toggle[aria-pressed="false"] {
+  color: #919191;
+}
+.fav-toggle[aria-pressed="true"] {
+  color: #ff0000;
+}

@@ -385,4 +385,16 @@ class DBHelper {
     return marker;
   }
 
+  // TODO: Create a helper method to mark a restaurant as a favorite. Use Background Sync
+  // to make it work offline
+  /**
+   * Mark Restaurant as favorite (true) or not (false) using Promises.
+   * 
+   * @param {number} Id of the restaurant.
+   * @param {boolean} favorite Whether restaurant should be marked as favorite or not.
+   */
+  static markFavorite(id, favorite) {
+    return fetch(`${DBHelper.API_URL}/restaurants/${id}/?is_favorite=${favorite}`)
+  }
+
 }
