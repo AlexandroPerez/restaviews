@@ -30,7 +30,9 @@
 
   <main id="maincontent">
     <section id="map-container" role="application" aria-roledescription="Google Maps">
-      <div id="map" aria-labelledby="map-container"></div>
+      <div id="map" aria-labelledby="map-container">
+        <div style="width: 100%; height: 100%; background-color: #e0e0e0;"></div>
+      </div>
     </section>
     <section role="contentinfo" aria-label="Restaurants Found In Your Area">
       <div class="filter-options">
@@ -50,11 +52,8 @@
   <script defer type="application/javascript" charset="utf-8" src="js/dbpromise.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/main.js"></script>
-  <script>
-
-  </script>
-
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=IzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script>
+  
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script>
 
 
   <footer id="footer">

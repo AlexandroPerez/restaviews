@@ -31,6 +31,7 @@
   font-size: 1em;
 }
 #restaurants-list li {
+  position: relative;
   background-color: #fff;
   margin: 30px;
   min-height: 380px;
