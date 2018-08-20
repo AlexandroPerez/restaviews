@@ -6,30 +6,43 @@ var map;
  * To be called from HTML deferred script as a callback in Google Maps API as initMap
  * (not window.initMap).
  */
-window.initMap = () => {
+document.addEventListener('DOMContentLoaded', (event) => {
   // Use a promise chain to populate restaurant info. Each function pipes the restaurant object
   // to the next one. All Functions should pipe the argument to make it easier to execute a Promise chain.
   fetchRestaurantFromURL()
     .then(fillBreadcrumb)
     .then(fillRestaurantHTML)
     .then(fillRestaurantHoursHTML)
-    .then(createMap)
+    .then(initMap)
     .then(fillReviewsHTML)
     .catch(console.log);
-}
+});
 
 /**
  *
  * @param {{name: string, latlng: {lat: number, lng: number}}} restaurant object with at least the above restaurant information.
  * @returns {Object} returns/pipes **restaurant** argument same way it was passed to promise chain.
  */
-const createMap = (restaurant) => {
+const initMap = (restaurant) => {
   // Create new google map
-  self.map = new google.maps.Map(document.getElementById('map'), {
+  /*self.map = new google.maps.Map(document.getElementById('map'), {
     zoom: 16,
     center: restaurant.latlng,
     scrollwheel: false
+  });/** */
+
+  // Create new openstreetmap
+  self.map = L.map('map', {
+    center: [restaurant.latlng.lat, restaurant.latlng.lng],
+    zoom: 16,
+    scrollWheelZoom: false,
+    dragging: false,
   });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
   // Add marker to map
   DBHelper.mapMarkerForRestaurant(restaurant, self.map);
   // return restaurant object to promise chain

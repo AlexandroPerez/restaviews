@@ -17,6 +17,12 @@
   <link rel="preload" media="screen and (min-width: 600px)" href="css/styles-medium.css"as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" media="screen and (min-width: 600px)" href="css/styles-medium.css"></noscript>
 
+  <!-- For some reason when using the downloaded version of leaflet, leaflet.js appends vendor to the image folder
+    so it looks like this "vendor/images/image.png" Since I'm using css/vendor/leaflet.css images have to be
+    placed in css/vendor/vendor/images... 🙄 -->
+  <link rel="preload" href="css/vendor/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'"/>
+  <noscript><link rel="stylesheet" href="css/vendor/leaflet.css"/></noscript>
+
   <link rel="manifest" href="/manifest.json">
   <title>Restaurant Reviews</title>
 </head>
@@ -48,17 +54,17 @@
     </section>
   </main>
 
+  <footer id="footer">
+    Copyright (c) 2017 <a href="/"><strong>Restaurant Reviews</strong></a> All Rights Reserved.
+  </footer>
+
+  <script defer type="application/javascript" charset="utf-8" src="js/vendor/leaflet.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/vendor/idb.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/dbpromise.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/main.js"></script>
-  
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script>
 
-
-  <footer id="footer">
-    Copyright (c) 2017 <a href="/"><strong>Restaurant Reviews</strong></a> All Rights Reserved.
-  </footer>
+  <!-- <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script> -->
 
 </body>
 

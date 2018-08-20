@@ -12,6 +12,7 @@
 
   <link rel="stylesheet" href="css/styles.css" type="text/css">
   <link rel="stylesheet" media="screen and (min-width: 600px)" href="css/styles-medium.css">
+  <link rel="stylesheet" href="css/vendor/leaflet.css"/>
 
   <link rel="manifest" href="/manifest.json">
   <title>Restaurant Info</title>
@@ -66,14 +67,14 @@
   <!-- End footer -->
 
   <!-- Beginning scripts -->
-  <!-- Database helpers -->
+  <script defer type="application/javascript" charset="utf-8" src="js/vendor/leaflet.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/vendor/idb.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/dbpromise.js"></script>
   <script type="text/javascript" src="js/dbhelper.js"></script>
   <!-- Main javascript file -->
   <script type="text/javascript" src="js/restaurant_info.js"></script>
-  <!-- Google Maps -->
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script>
+
+  <!-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script> -->
   <!-- End scripts -->
 
 </body>

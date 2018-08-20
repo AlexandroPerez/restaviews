@@ -17,8 +17,12 @@ const paths = {
     dest: 'dist/css/'
   },
   scripts: {
-    src: 'src/**/*.js', // root of src so sw.js is included
+    src: ['src/**/*.js', '!src/js/vendor/**/*.js'], // root of src so sw.js is included, ignore vendor scripts
     dest: 'dist/'
+  },
+  vendorScripts: {
+    src: 'src/js/vendor/**/*.js',
+    dest: 'dist/js/vendor/'
   },
   images: {
     jpg: {
@@ -26,8 +30,8 @@ const paths = {
       dest: 'dist/img/'
     },
     png: {
-      src: 'src/img/**/*.png',
-      dest: 'dist/img/'
+      src: 'src/**/*.png', // png images will only be copied. Copy from any location (so leaflet images are included too)
+      dest: 'dist/'
     },
     icon: {
       src: 'src/img/icons/icon.png', // icon dimensions should be 512 x 512 or greater, and of png format.
@@ -58,6 +62,15 @@ export function scripts() {
     .pipe(sourcemaps.write('.'))
     .pipe(gzip())
     .pipe(gulp.dest(paths.scripts.dest));
+}
+
+// Vendor scripts on separate task, because we don't need sourcemaps for them.
+export function vendorScripts() {
+  return gulp.src(paths.vendorScripts.src)
+    .pipe(newer(paths.vendorScripts.dest))
+    .pipe(uglify()) // in case file isn't minified already
+    .pipe(gzip())
+    .pipe(gulp.dest(paths.vendorScripts.dest));
 }
 
 export function pngImages() {
@@ -177,6 +190,7 @@ export function watch() {
   const logEvent = event => {console.log(`File ${event.path} was ${event.type}, running specific task for it.`)};
 
   gulp.watch(paths.scripts.src, scripts).on('change', logEvent);
+  gulp.watch(paths.vendorScripts.src, vendorScripts).on('change', logEvent);
   gulp.watch(paths.styles.src, styles).on('change', logEvent);
   gulp.watch(paths.html.src, html).on('change', logEvent);
   gulp.watch(paths.images.jpg.src, jpgImages).on('change', logEvent);
@@ -191,7 +205,7 @@ export function watch() {
 export function build(done) {
   runSequence(
     'clean',
-    ['scripts','styles','html','json','images'],
+    ['scripts','vendorScripts','styles','html','json','images'],
     done
   );
 }

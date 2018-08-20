@@ -1,14 +1,23 @@
-var map; // Global variable to hold Google Maps information
+var map = undefined; // Global variable to hold Google Maps information, and whether or not initMap executed.
 self.markers = []; // Global variable to hold current map markers.
 
+document.addEventListener('DOMContentLoaded', (event) => {
+  DBHelper.fetchRestaurantsPromise()
+    .then(fillNeighborhoodsHTML)
+    .then(fillCuisinesHTML)
+    .then(initMap) // added to call leaflet once content is loaded. One Fetch to API for the Win!!!
+    .then(updateRestaurants)
+    .catch(console.error);
+});
+
 /**
- * Initialize Google map, set its markers, and populate restaurant list.
+ * Initialize Google map and set ONLY its markers.
  * To be called from HTML deferred script as a callback in Google Maps API as initMap
  * (not window.initMap). Example:
  *                                                                                                                            ↓↓↓↓↓↓↓
  * <script async defer src="https://maps.googleapis.com/maps/api/js?key=<key>&libraries=places&language=en&region=US&callback=initMap"></script>
  */
-window.initMap = () => {
+/*window.initMap = () => {
   let loc = {
     lat: 40.722216,
     lng: -73.987501
@@ -18,13 +27,27 @@ window.initMap = () => {
     center: loc,
     scrollwheel: false
   });
-  // Fetch all restaurants when initializing map (main page is loaded for the first time)
-  // and populate filter options, update restaurant list and map markers accordingly
+  // TODO: move app functionality out of this function. The app doesn't depend on Google Maps
+  // being online or not. This function should only put markers on map.
   DBHelper.fetchRestaurantsPromise()
-    .then(fillNeighborhoodsHTML)
-    .then(fillCuisinesHTML)
-    .then(updateRestaurants)
-    .catch(console.log);
+    .then(addMarkersToMap)
+    .catch(console.error);
+}/** */
+
+const initMap = (restaurants) => {
+  // TODO: in mobile, dragging is disabled, implement a way to allow draggin, like adding a button to the map?
+  self.map = L.map('map', {
+    center: [40.722216, -73.987501],
+    zoom: 12,
+    scrollWheelZoom: false,
+    dragging: !L.Browser.mobile
+  });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  return restaurants; // pipe restaurants back to Promise chain.
 }
 
 /**
@@ -113,8 +136,11 @@ const resetRestaurants = (restaurants) => {
   const ul = document.getElementById('restaurants-list');
   ul.innerHTML = '';
 
-  // Remove all map markers
-  self.markers.forEach(m => m.setMap(null));
+  // Remove all map markers, if any. If Google Maps was never initialized (initMap) Array is empty.
+  //self.markers.forEach(m => m.setMap(null));
+  if (self.markers) {
+    self.markers.forEach(marker => marker.remove());
+  }
   self.markers = [];
 
   // return restaurants with no changes. Just pipe it to the next promise chain
@@ -212,7 +238,8 @@ const createRestaurantHTML = (restaurant) => {
 /**
  * Add markers for current restaurants to the map.
  */
-const addMarkersToMap = (restaurants) => {
+/*const addMarkersToMap = (restaurants) => {
+  if (!map) return; // If map hasn't been defined (Google Maps is offline, so initMap never runs)
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
@@ -221,6 +248,18 @@ const addMarkersToMap = (restaurants) => {
     });
     self.markers.push(marker);
   });
+}/** */
+const addMarkersToMap = (restaurants) => {
+  restaurants.forEach(restaurant => {
+    // Add marker to the map
+    const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
+    marker.on("click", onClick);
+    function onClick() {
+      window.location.href = marker.options.url;
+    }
+    self.markers.push(marker);
+  });
+
 }
 
 /**
@@ -279,4 +318,25 @@ function registerServiceWorker () {
   });
 }
 
-registerServiceWorker();
+//registerServiceWorker();
+
+function loadMaps() {
+  console.log("Loading fucking maps!");
+  const script = document.createElement('script');
+  script.onload = function() {
+    console.log("script loaded and ready");
+  };
+  script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap";
+  document.getElementsByTagName('head')[0].appendChild(script);
+
+  const mapElement = document.getElementById('map');
+  mapElement.onclick = function() {
+    console.log("you click me you fuck!");
+    const script = document.createElement('script');
+    script.onload = function() {
+      console.log("script loaded and ready");
+    };
+    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap";
+    document.getElementsByTagName('head')[0].appendChild(script);
+  };
+}
