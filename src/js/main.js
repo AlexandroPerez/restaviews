@@ -318,25 +318,4 @@ function registerServiceWorker () {
   });
 }
 
-//registerServiceWorker();
-
-function loadMaps() {
-  console.log("Loading fucking maps!");
-  const script = document.createElement('script');
-  script.onload = function() {
-    console.log("script loaded and ready");
-  };
-  script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap";
-  document.getElementsByTagName('head')[0].appendChild(script);
-
-  const mapElement = document.getElementById('map');
-  mapElement.onclick = function() {
-    console.log("you click me you fuck!");
-    const script = document.createElement('script');
-    script.onload = function() {
-      console.log("script loaded and ready");
-    };
-    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap";
-    document.getElementsByTagName('head')[0].appendChild(script);
-  };
-}
+registerServiceWorker();

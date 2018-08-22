@@ -396,7 +396,8 @@ class DBHelper {
   }
 
   // TODO: Create a helper method to mark a restaurant as a favorite. Use Background Sync
-  // to make it work offline
+  // to make it work offline, fallback to a PUT fetch if service worker isn't supported, 
+  // or if any errors happen.
   /**
    * Mark Restaurant as favorite (true) or not (false) using Promises.
    *
@@ -404,28 +405,45 @@ class DBHelper {
    * @param {boolean} isFavorite Whether restaurant is favorite or not.
    */
   static markFavorite(id, isFavorite) {
+    id = Number(id) // REMEMBER to make id a number, otherwise it won't work in iDB .get() 🙄
+    const url = `${DBHelper.API_URL}/restaurants/${id}/?is_favorite=${isFavorite}`;
+    const PUT = {method: 'PUT'};
+
+    // if Service Worker isn't supported, just make a PUT fetch
+    if (!navigator.serviceWorker) {
+      return fetch(url, PUT);
+    }
+
     // Do not make a fetch request, but instead save url to iDB, reguister
     // a background sync, and have the service worker fetch the request from iDB
     // when a sync is triggered. 😎
-    const url = `${DBHelper.API_URL}/restaurants/${id}/?is_favorite=${isFavorite}`;
-
     return dbPromise.then(db => {
       const tx = db.transaction('putRequests', 'readwrite');
       const putRequestStore = tx.objectStore('putRequests');
-
       putRequestStore.add(url);
-
       return tx.complete;
     })
     .then(() => {
-      // register sync only if put request was successfully stored in iDB
+      // register sync iDB transaction was successfull
+      console.log('registering putSync');
       navigator.serviceWorker.ready.then(reg => reg.sync.register('putSync'));
-    }).catch(() => {
-      // TODO: if iDB couldn't be used, try a fetch request without background sync.
+      
+      // Update local iDB data so data is updated online
+      return dbPromise.then(db => {
+        const tx = db.transaction('restaurants', 'readwrite');
+        const restaurantStore = tx.objectStore('restaurants');
+
+        restaurantStore.get(id).then(restaurant => {
+          restaurant.is_favorite = String(isFavorite);
+          restaurantStore.put(restaurant);
+        });
+
+        return tx.complete;
+      });
+    }).catch((e) => {
+      console.error(e);
+      // TODO: if iDB couldn't be used, or an error was thrown, try a fetch request without background sync.
+      return fetch(url, PUT);
     });
-
-    // return fetch(url, {method: "PUT"}).catch(console.error);
-
   }
-
 }

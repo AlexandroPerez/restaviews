@@ -19,13 +19,20 @@ self.addEventListener('install', function(event) {
         '/restaurant.html',
         '/css/styles.css',
         '/css/styles-medium.css',
-        '/js/offline.js',
         '/js/vendor/idb.js',
         '/img/icon_error.png',
         '/js/dbhelper.js',
         '/js/dbpromise.js',
         '/js/main.js',
-        '/js/restaurant_info.js'
+        '/js/restaurant_info.js',
+        // cache leaflet assets
+        '/js/vendor/leaflet.js',
+        '/css/vendor/leaflet.css',
+        '/css/vendor/vendor/images/layers-2x.png',
+        '/css/vendor/vendor/images/layers.png',
+        '/css/vendor/vendor/images/marker-icon-2x.png',
+        '/css/vendor/vendor/images/marker-icon.png',
+        '/css/vendor/vendor/images/marker-shadow.png',
       ]);
     })
   );
@@ -132,32 +139,55 @@ function serveImage(request) {
 
 self.addEventListener('sync', event => {
   if (event.tag == 'putSync') {
-    event.waitUntil(syncPutRequests());
-  }
+    // see: https://wicg.github.io/BackgroundSync/spec/#dom-syncevent-lastchance
+    event.waitUntil(syncPutRequests().catch(err => {
+      if (event.lastChance) {
+        console.log("Failed to sync request");
+      }
+      throw err;
+    })
+  )}
 });
 
 // TODO: Listen to sync events made when a restaurant favorite button is toggled.
 function syncPutRequests() {
   // open iDB, and process all put requests, clearing iDB when done.
+  console.log('hello from putSync');
+  return Promise.reject('simulated failure');
+  /*if (!navigator.onLine) return Promise.reject('offline try again later fucker');
   return dbPromise.then(db => {
     const tx = db.transaction('putRequests', 'readwrite');
     const putRequestStore = tx.objectStore('putRequests');
 
     // get all put requests stored while offline
-    putRequestStore.getAll()
-      .then(putRequests => {
+    putRequestStore.openCursor()
+    .then(function putRequest(cursor) {
+      if (!cursor) return; // exit if done
 
-        // and make a PUT fetch request for each one.
-        putRequests.forEach(putRequest => {
-          console.log(`Processing ${putRequest}...`);
-          fetch(putRequest, {method: "PUT"});
-        });
-      })
-      .then(() => {
-        // clear iDB database if successful
-        putRequestStore.clear();
-      })
-      .catch(console.error);
-      return tx.complete;
-  });
+      const url = cursor.value;
+      const PUT = {method: 'PUT'};
+      console.log("making PUT fetch to ", url);
+      // and make a PUT fetch request for each one.
+      fetch(url, PUT);
+      cursor.delete();
+
+      return cursor.continue().then(putRequest);
+    })
+    .then(
+      function onfulfilled() {
+        // clear iDB database ONLY if successful (no fetch request failed)
+        console.log('No Failures! Yay!')
+        //putRequestStore.clear();
+      },
+      function onrejected(e) {
+        console.error("Noooooo! Failures!!!!", e);
+        // TODO: If any of the fetch requests failed, remove any successful fetch from iDB and exit
+        console.log("YOu should see some requests still in iDB");
+        // TODO: remember to return a rejected promise so sync tries again if anything failed.
+        //return Promise.reject();
+      }
+    );
+    
+    //return tx.complete;
+  });/** */
 }
