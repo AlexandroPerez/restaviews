@@ -33,8 +33,7 @@ self.addEventListener('install', function(event) {
         '/css/vendor/vendor/images/layers.png',
         '/css/vendor/vendor/images/marker-icon-2x.png',
         '/css/vendor/vendor/images/marker-icon.png',
-        '/css/vendor/vendor/images/marker-shadow.png',
-        'http://localhost:1337/restaurants', //TODO: remove this
+        '/css/vendor/vendor/images/marker-shadow.png'
       ]);
     })
   );

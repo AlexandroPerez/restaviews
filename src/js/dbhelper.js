@@ -396,7 +396,7 @@ class DBHelper {
   }
 
   // TODO: Create a helper method to mark a restaurant as a favorite. Use Background Sync
-  // to make it work offline, fallback to a PUT fetch if service worker isn't supported, 
+  // to make it work offline, fallback to a PUT fetch if service worker isn't supported,
   // or if any errors happen.
   /**
    * Mark Restaurant as favorite (true) or not (false) using Promises.
@@ -426,8 +426,14 @@ class DBHelper {
     .then(() => {
       // register sync iDB transaction was successfull
       console.log('registering putSync');
-      navigator.serviceWorker.ready.then(reg => reg.sync.register('putSync'));
-      
+      navigator.serviceWorker.ready.then(function (reg) {
+        console.log("after navigator.serviceWorker.ready");
+        console.log('before', reg.sync.getTags());
+        reg.sync.register('putSync');
+        console.log('after', reg.sync.getTags());
+      }).catch(function (e) {
+        console.error(e, "System was unable to register for a sync");
+      });
       // Update local iDB data so data is updated online
       return dbPromise.then(db => {
         const tx = db.transaction('restaurants', 'readwrite');
