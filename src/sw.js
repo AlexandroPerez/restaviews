@@ -8,7 +8,7 @@ var allCaches = [
 
 // External Scripts can be imported into the service worker scope by using importScripts!!
 // see: https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/importScripts
-importScripts('js/vendor/idb.js', 'js/dbpromise.js');
+importScripts('js/vendor/idb.js', 'js/dbpromise.js', 'js/synchelper.js');
 
 /** At Service Worker Install time, cache all static assets */
 self.addEventListener('install', function(event) {
@@ -22,6 +22,7 @@ self.addEventListener('install', function(event) {
         '/js/vendor/idb.js',
         '/img/icon_error.png',
         '/js/dbhelper.js',
+        '/js/synchelper.js',
         '/js/dbpromise.js',
         '/js/main.js',
         '/js/restaurant_info.js',
@@ -33,6 +34,7 @@ self.addEventListener('install', function(event) {
         '/css/vendor/vendor/images/marker-icon-2x.png',
         '/css/vendor/vendor/images/marker-icon.png',
         '/css/vendor/vendor/images/marker-shadow.png',
+        'http://localhost:1337/restaurants', //TODO: remove this
       ]);
     })
   );
@@ -140,7 +142,7 @@ function serveImage(request) {
 self.addEventListener('sync', event => {
   if (event.tag == 'putSync') {
     // see: https://wicg.github.io/BackgroundSync/spec/#dom-syncevent-lastchance
-    event.waitUntil(syncPutRequests().catch(err => {
+    event.waitUntil(SyncHelper.putRequests().catch(err => {
       if (event.lastChance) {
         console.log("Failed to sync request");
       }
@@ -148,46 +150,3 @@ self.addEventListener('sync', event => {
     })
   )}
 });
-
-// TODO: Listen to sync events made when a restaurant favorite button is toggled.
-function syncPutRequests() {
-  // open iDB, and process all put requests, clearing iDB when done.
-  console.log('hello from putSync');
-  return Promise.reject('simulated failure');
-  /*if (!navigator.onLine) return Promise.reject('offline try again later fucker');
-  return dbPromise.then(db => {
-    const tx = db.transaction('putRequests', 'readwrite');
-    const putRequestStore = tx.objectStore('putRequests');
-
-    // get all put requests stored while offline
-    putRequestStore.openCursor()
-    .then(function putRequest(cursor) {
-      if (!cursor) return; // exit if done
-
-      const url = cursor.value;
-      const PUT = {method: 'PUT'};
-      console.log("making PUT fetch to ", url);
-      // and make a PUT fetch request for each one.
-      fetch(url, PUT);
-      cursor.delete();
-
-      return cursor.continue().then(putRequest);
-    })
-    .then(
-      function onfulfilled() {
-        // clear iDB database ONLY if successful (no fetch request failed)
-        console.log('No Failures! Yay!')
-        //putRequestStore.clear();
-      },
-      function onrejected(e) {
-        console.error("Noooooo! Failures!!!!", e);
-        // TODO: If any of the fetch requests failed, remove any successful fetch from iDB and exit
-        console.log("YOu should see some requests still in iDB");
-        // TODO: remember to return a rejected promise so sync tries again if anything failed.
-        //return Promise.reject();
-      }
-    );
-    
-    //return tx.complete;
-  });/** */
-}
