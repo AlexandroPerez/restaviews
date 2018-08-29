@@ -140,12 +140,16 @@ function serveImage(request) {
 
 self.addEventListener('sync', event => {
   if (event.tag == 'putSync') {
+    console.log('Sync Event Triggered at', Date());
     // see: https://wicg.github.io/BackgroundSync/spec/#dom-syncevent-lastchance
     event.waitUntil(SyncHelper.putRequests().catch(err => {
       if (event.lastChance) {
-        console.log("Failed to sync request");
+        console.error("Background Sync failed all attempts to sync. No more attempts will be made.");
+        // TODO: Do some clean up in iDB if all attempts failed?
+      } else {
+        console.log("Background Sync failed, Browser will retry later as it sees fit.");
       }
-      throw err;
+      console.error("Reason Background Sync failed: ", err);
     })
   )}
 });
