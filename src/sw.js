@@ -139,13 +139,17 @@ function serveImage(request) {
 }
 
 self.addEventListener('sync', event => {
-  if (event.tag == 'putSync') {
+  if (event.tag == 'syncFavorites') {
     console.log('Sync Event Triggered at', Date());
     // see: https://wicg.github.io/BackgroundSync/spec/#dom-syncevent-lastchance
-    event.waitUntil(SyncHelper.putRequests().catch(err => {
+    event.waitUntil(SyncHelper.syncFavorites().catch(err => {
       if (event.lastChance) {
         console.error("Background Sync failed all attempts to sync. No more attempts will be made.");
-        // TODO: Do some clean up in iDB if all attempts failed?
+        // TODO: Do some clean up in iDB if all attempts failed.
+        // Restaurants awaiting a Sync have a property awaitingSync set to true
+        // Open iDB restaurant Store and remove properties from failed syncs
+        // syncFavorites Store uses restaurant_id as key, so any remaining records
+        // in it point to failed syncs at this point.
       } else {
         console.log("Background Sync failed, Browser will retry later as it sees fit.");
       }

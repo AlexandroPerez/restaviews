@@ -22,7 +22,12 @@ class DBHelper {
    * @returns {Promise.<Object[]>} A promise that resolves to an Array of restaurant objects.
    */
   static fetchRestaurantsPromise() {
-    return fetch(`${DBHelper.API_URL}/restaurants`)
+    const url = `${DBHelper.API_URL}/restaurants`;
+
+    // if service worker isn't supported, just return a regular fetch.
+    if (!navigator.serviceWorker) return fetch(url).then(response => {return response.json()});
+
+    return fetch(url)
       .then(response => {
         if (!response.ok) {
           return Promise.reject(`API Fetch request to ${response.url} failed with code: ${response.status}`);
@@ -31,27 +36,37 @@ class DBHelper {
       })
       .then(
         function onfulfilled(restaurants) {
-          // TODO: after successfully fetching restaurants from API,
-          // store/update local indexedDB restaurants
-          dbPromise.then(db => {
+          // After fetching restaurants from network, if any local iDB restaurant
+          // is awaitingSync, use that instead of Fetched restaurant. Create/Update other restaurants
+          // with fetched data
+          return dbPromise.then(db => {
             const tx = db.transaction('restaurants', 'readwrite');
             const restaurantStore = tx.objectStore('restaurants');
-            restaurants.forEach(restaurant => {
-              restaurantStore.get(restaurant.id)
-                .then(stored => {
-                  // only update IDB restaurant data, if data is new or has been updated.
-                  // If restaurant is not stored OR stored updated date doesn't match, create/update.
-                  if (!stored || stored.updatedAt !== restaurant.updatedAt) {
-                    restaurantStore.put(restaurant);
-                  }
-                });
+
+            return Promise.all(restaurants.map((restaurant, index, restaurants) => {
+              return restaurantStore.get(restaurant.id).then(idbRestaurant => {
+                // There are 2 reasons to create/update local iDB restaurant data:
+                // 1. it doesn't exist
+                // 2. is not awaiting a Background Sync and updatedAt property doesn't match. This scenario
+                //    will be useful for failed syncs, where awaitingSync becomes false, and server data
+                //    should be used instead.
+                if ( !idbRestaurant || (!idbRestaurant.awaitingSync && idbRestaurant.updatedAt !== restaurant.updatedAt) ) {
+                  return restaurantStore.put(restaurant);
+                }
+                // if local iDB restaurant is awaiting a sync, use that instead.
+                if (idbRestaurant.awaitingSync) {
+                  restaurants[index] = idbRestaurant;
+                }
+              });
+            })).then(() => {
+              tx.complete;
+              return restaurants;
             });
-            return tx.complete; // make sure readwrite transaction was successful.
-          }).catch(console.log);
-          return restaurants; // Return restaurants fetched from network.
+
+          });
         },
         function onrejected(error) {
-          //TODO: handle offline mode (couldn't fetch restaurants from API)
+          // Handle offline mode (couldn't fetch restaurants from API)
           console.log(error, '\nTrying local indexedDB database...');
           return dbPromise.then(db => {
             const tx = db.transaction('restaurants');
@@ -93,8 +108,13 @@ class DBHelper {
    * @param {(number)} id a valid restaurant id.
    */
   static fetchRestaurantById(id) {
+    const url = `${DBHelper.API_URL}/restaurants/${id}`;
+
+    // if service worker isn't supported, just return a regular fetch.
+    if (!navigator.serviceWorker) return fetch(url).then(response => {return response.json()});
+
     id = Number(id); // Make sure id is a number. Strings will give an error in iDB.
-    return fetch(`${DBHelper.API_URL}/restaurants/${id}`)
+    return fetch(url)
       .then(response => {
         if (!response.ok) {
           return Promise.reject(`API Fetch request to ${response.url} failed with code: ${response.status}`);
@@ -102,7 +122,14 @@ class DBHelper {
         return response.json();
       })
       .then(
+        //TODO: on fulfilled use fetched restaurant only if restaruant isn't awaitingSync
         function onfulfilled(restaurant) {
+
+          // Return restaurant fetched from Network or local iDB restaurant if awaitingSync
+          console.log('ok so far?');
+          return restaurant;
+        },
+        /*function onfulfilled(restaurant) {
           //TODO: after successfully fetching restaurant from API,
           // store/update local iDB restaurant database
           dbPromise.then(db => {
@@ -119,7 +146,7 @@ class DBHelper {
             return tx.complete // make sure readwrite transaction was successful.
           });
           return restaurant; // Return restaurant fetched from network.
-        },
+        },/** */
         function onrejected(error) {
           //TODO: handle offline mode (couldn't fetch restaurant from API)
           console.error(`${error}\n Trying local indexedDB database...`);
@@ -405,12 +432,12 @@ class DBHelper {
    * @param {boolean} isFavorite Whether restaurant is favorite or not.
    */
   static markFavorite(id, isFavorite) {
-    id = Number(id) // REMEMBER to make id a number, otherwise it won't work in iDB .get() 🙄
+    id = Number(id) // REMEMBER to make id a number, otherwise it won't work in iDB .get() method 🙄
     const url = `${DBHelper.API_URL}/restaurants/${id}/?is_favorite=${isFavorite}`;
     const PUT = {method: 'PUT'};
 
-    // if Service Worker isn't supported, just make a PUT fetch
-    if (!navigator.serviceWorker) {
+    // if either SyncManager OR Service Worker aren't supported, just make a PUT fetch as usual
+    if (!window.SyncManager || !navigator.serviceWorker) {
       return fetch(url, PUT);
     }
 
@@ -418,19 +445,17 @@ class DBHelper {
     // a background sync, and have the service worker fetch the request from iDB
     // when a sync is triggered. 😎
     return dbPromise.then(db => {
-      const tx = db.transaction('putRequests', 'readwrite');
-      const putRequestStore = tx.objectStore('putRequests');
-      putRequestStore.add(url);
+      const tx = db.transaction('syncFavorites', 'readwrite');
+      const syncFavoriteStore = tx.objectStore('syncFavorites');
+      const sync = {"restaurant_id": id, "url": url};
+      syncFavoriteStore.put(sync);
       return tx.complete;
     })
     .then(() => {
       // register sync iDB transaction was successfull
-      console.log('registering putSync');
+      console.log('registering syncFavorite');
       navigator.serviceWorker.ready.then(function (reg) {
-        console.log("after navigator.serviceWorker.ready");
-        console.log('before', reg.sync.getTags());
-        reg.sync.register('putSync');
-        console.log('after', reg.sync.getTags());
+        reg.sync.register('syncFavorites');
       }).catch(function (e) {
         console.error(e, "System was unable to register for a sync");
       });
@@ -440,7 +465,16 @@ class DBHelper {
         const restaurantStore = tx.objectStore('restaurants');
 
         restaurantStore.get(id).then(restaurant => {
+          const isoDate = new Date().toISOString(); // sails actually uses ISO date format
           restaurant.is_favorite = String(isFavorite);
+          restaurant.updatedAt = isoDate;
+
+          // use this property to know if data was updated while offline. If data couldn't be
+          // synced for any reason, this property should be removed, so data is overwritten by
+          // server data in the next page load.
+          // Obviously, since server doesn't include this property, it won't exists when updating data
+          // from server.
+          restaurant.awaitingSync = true;
           restaurantStore.put(restaurant);
         });
 
