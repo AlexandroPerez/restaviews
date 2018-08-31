@@ -453,7 +453,6 @@ class DBHelper {
     })
     .then(() => {
       // register sync iDB transaction was successfull
-      console.log('registering syncFavorite');
       navigator.serviceWorker.ready.then(function (reg) {
         reg.sync.register('syncFavorites');
       }).catch(function (e) {

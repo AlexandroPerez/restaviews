@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 const initMap = (restaurants) => {
   // TODO: in mobile, dragging is disabled, implement a way to allow draggin, like adding a button to the map?
   self.map = L.map('map', {
-    center: [40.722216, -73.987501],
+    center: [40.717216, -73.977501],
     zoom: 12,
     scrollWheelZoom: false,
     dragging: !L.Browser.mobile

@@ -43,7 +43,6 @@ class SyncHelper {
       const restaurantStore = tx.objectStore('restaurants');
 
       restaurantStore.put(restaurant);
-      console.log('updated local iDB restaurant data with the following: ', restaurant);
       return tx.complete;
     });
   }
@@ -59,9 +58,7 @@ class SyncHelper {
       const syncFavoriteStore = tx.objectStore('syncFavorites');
 
       syncFavoriteStore.delete(id);
-      console.log('Removed syncFavorite id: ', id);
-      //return tx.complete;
-      return `PUT Fetch to Restaurant id ${id} was oh-ok! 👍`;
+      return tx.complete;
     });
   }
 

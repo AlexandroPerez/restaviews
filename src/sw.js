@@ -57,7 +57,6 @@ self.addEventListener('activate', function(event) {
 
 /** Highjack fetch requests and respond accordingly */
 self.addEventListener('fetch', function(event) {
-  console.log('something is being fetched...');
   const requestUrl = new URL(event.request.url);
 
   // only highjack request made to our app (not google maps for example)
@@ -82,15 +81,7 @@ self.addEventListener('fetch', function(event) {
     // from the site, I implemented it outside the service worker scope.
   }
 
-  // TODO: Uncomment after implementing serveTiles method
-  // Cache OpenStreetMap tiles
-  /*if (requestUrl.origin.endsWith('tile.openstreetmap.org')) {
-    event.respondWith(serveTiles(event.request));
-    return;
-  }/** */
-
   // Default behavior: respond with cached elements, if any (google maps may implement their own?)
-  console.log('requestUrl; ', requestUrl);
   event.respondWith(
     caches.match(event.request).then(function(response) {
       return response || fetch(event.request);
@@ -144,27 +135,8 @@ function serveImage(request) {
   });
 }
 
-// TODO: cache openstreetmap tiles, save urls in iDB referencing the page their for as the id
-// for example, if index.html called the tiles, store them in iDB saying their tiles for that page like so:
-// tiles Store Record = {id: location.pathname, accessedAt: last-accessed-date; urls: [url1, url2, url3,...]}
-// Then dbStore.get(id) -> 
-//    1. if new, create newTile record, or make a copy current one, so new url can be appended to it.
-//    2. update accessedAt date of newTile
-//    2. Append url to newTile: newTile.urls.append(url)
-//    3. Put newTile into iDB to replace old tile record: dbStore.put(newTile)
-//
-// NOTE: that the tile store should have an accessedAt index, so it can be sorted by accessedAt time
-//       and delete older tile urls like this! For this app, since there are 11 pages (10 restaurants
-//       and 1 main page) only cache tiles for 10 pages, deleteing the 11th one. Just access the 
-//       11th cursor, and remove all tile.urls from Cache!!!
-function serveTiles(request) {
-  const url = request.url
-
-}
-
 self.addEventListener('sync', event => {
   if (event.tag == 'syncFavorites') {
-    console.log('Sync Event Triggered at', Date());
     // see: https://wicg.github.io/BackgroundSync/spec/#dom-syncevent-lastchance
     event.waitUntil(SyncHelper.syncFavorites().catch(err => {
       if (event.lastChance) {
