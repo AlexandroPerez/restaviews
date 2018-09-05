@@ -250,31 +250,46 @@ select:focus, select:hover {
 
 /* Styles for review form */
 
+form#review {
+  background-color: #333333;
+  padding: 0px 0px 0px 25px;
+  border-radius: 0px 25px 0px 25px;
+  box-shadow: 2px 2px 10px #999;
+}
+form p:nth-child(1) {
+  border-radius: 0 25px 0 0;
+}
+form p {
+  background-color: #fff;
+  margin: 0;
+  padding: 10px;
+}
+form radiogroup {
+  background-color: #fff;
+  display: block;
+}
+
 radiogroup.rating {
   position: relative;
 }
 
 radiogroup.rating label {
   display: inline-block;
-  margin: 0;
+  margin: -15px 0px -8px 0px;
   padding: 0;
   font-size: 40px;
-  color: lightgreen;
+  color: #90ee90;
 }
 radiogroup.rating label span {
-  position: absolute; 
-  overflow: hidden; 
-  clip: rect(0 0 0 0); 
-  height: 1px; width: 1px; 
-  margin: -1px; padding: 0; border: 0;  
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  height: 1px; width: 1px;
+  margin: -1px; padding: 0; border: 0;
 }
 
 radiogroup.rating label.on {
   color: green;
-}
-
-radiogroup.rating label.focus {
-  text-shadow: 2px 2px 10px red;
 }
 
 .hidden {
@@ -285,4 +300,32 @@ radiogroup.rating label.focus {
   clip: rect(0 0 0 0) !important;
   height: 1px; width: 1px !important;
   margin: -1px; padding: 0; border: 0 !important;
+}
+
+input[type=text], textarea {
+  transition: all 0.30s ease-in-out;
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+  outline: none;
+  padding: 3px 0px 3px 3px;
+  margin: 5px 1px 3px 0px;
+  border: 1px solid #ddd;
+}
+
+input[type=text]:focus, textarea:focus {
+  box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+  padding: 3px 0px 3px 3px;
+  margin: 5px 1px 3px 0px;
+  border: 1px solid rgba(81, 203, 238, 1);
+}
+
+radiogroup.rating label.focus {
+  transition: all 0.30s ease-in-out;
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+  text-shadow: 1px 1px 7px rgba(81, 203, 238, 1);
 }

@@ -137,44 +137,9 @@ const fillReviewsHTML = (restaurant) => {
   DBHelper.fetchReviewsByRestaurantId(restaurant.id)
     .then(reviews => {
       // create form for adding reviews
-      const form = document.createElement('form');
-      form.id = 'review';
-
-      let p = document.createElement('p');
-      const name = document.createElement('input');
-      name.id = "name"
-      name.setAttribute('aria-label', 'Name');
-      name.setAttribute('placeholder', 'Enter Your Name');
-      p.appendChild(name);
-      form.appendChild(p);
-
-      const radiogroup = document.createElement('radiogroup');
-      radiogroup.id = "rating";
-      radiogroup.classList.add('rating');
-      for (let n = 1; n < 6; n++) {
-        let label = document.createElement('label');
-        label.innerHTML = `<span>${n} star</span>&#9733;`; // this is the charcode for a star ★
-        label.id = `${n}star`;
-        label.for = n;
-        radiogroup.appendChild(label);
-
-        let radio = document.createElement('input');
-        radio.setAttribute('type', 'radio');
-        radio.id = n;
-        radio.value = n;
-        radio.name = "rating";
-        radio.classList.add('hidden');
-        radiogroup.appendChild(radio);
-      }
-      form.appendChild(radiogroup);
-
-      p = document.createElement('p');
-      const textarea = document.createElement('textarea');
-      textarea.id = "comments";
-      textarea.setAttribute('aria-label', 'comments');
-      textarea.setAttribute('placeholder', 'Enter any comments here');
-      p.appendChild(textarea);
-      form.appendChild(p);
+      const form = createReviewForm('review');
+      const leaveReview = document.createElement('h3');
+      leaveReview.innerText = "Leave a Review";
 
 
       // if no reviews, let user know, and exit sooner.
@@ -182,6 +147,7 @@ const fillReviewsHTML = (restaurant) => {
         const noReviews = document.createElement('p');
         noReviews.innerHTML = 'No reviews yet! Be the first one!';
         container.appendChild(noReviews);
+        container.appendChild(leaveReview);
         container.appendChild(form);
         return;
       }
@@ -190,6 +156,7 @@ const fillReviewsHTML = (restaurant) => {
         ul.appendChild(createReviewHTML(review));
       });
       container.appendChild(ul);
+      container.appendChild(leaveReview);
       container.appendChild(form);
     })
     .catch(e => {
@@ -272,4 +239,103 @@ const getParameterByName = (name, url = window.location.href) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+/**
+ *
+ * @param {string} id Optional id for the form. It defaults to "review".
+ *
+ */
+const createReviewForm = (id = "review") => {
+  const form = document.createElement('form');
+  form.id = id;
+
+  let p = document.createElement('p');
+  const name = document.createElement('input');
+  name.id = "name"
+  name.setAttribute('type', 'text');
+  name.setAttribute('aria-label', 'Name');
+  name.setAttribute('placeholder', 'Enter Your Name');
+  p.appendChild(name);
+  form.appendChild(p);
+
+  const radiogroup = document.createElement('radiogroup');
+  radiogroup.id = "rating";
+  radiogroup.classList.add('rating');
+  for (let n = 1; n < 6; n++) {
+    let label = document.createElement('label');
+    label.innerHTML = `<span>${n} star</span>&#9733;`; // this is the charcode for a star ★
+    label.id = `${n}star`;
+    label.setAttribute('for', n);
+    label.onmouseover = function() { litStars(n, true); };
+    label.onmouseout = function() { litSelectedStars(); };
+    label.onmousedown = function(e) {e.preventDefault(); }; // prevent blinking of styles when mouse is pressed down, but not let go yet.
+    radiogroup.appendChild(label);
+
+    let radio = document.createElement('input');
+    radio.setAttribute('type', 'radio');
+    radio.id = n;
+    radio.value = n;
+    radio.name = "rating";
+    radio.classList.add('hidden');
+    radio.onfocus = function() { litStars(n, true); };
+    radio.onblur = function() { litSelectedStars(); };
+    radio.onclick = function() { selectStar(n) };
+    radiogroup.appendChild(radio);
+  }
+  form.appendChild(radiogroup);
+
+  p = document.createElement('p');
+  const textarea = document.createElement('textarea');
+  textarea.id = "comments";
+  textarea.setAttribute('aria-label', 'comments');
+  textarea.setAttribute('placeholder', 'Enter any comments here');
+  p.appendChild(textarea);
+  form.appendChild(p);
+
+  return form;
+};
+
+function selectStar(n) {
+  let total = 5;
+  while (total > 0) {
+    let id = total+"star";
+    let star = document.getElementById(id);
+    if (total == n) {
+      star.classList.add('selected-star');
+    } else {
+      star.classList.remove('selected-star');
+    }
+    total--;
+  }
+}
+
+function litStars(n, focus = false) {
+  let total = 5;
+  while (total > 0) {
+    let id = total+"star";
+    let star = document.getElementById(id);
+    if (total <= n) {
+      star.classList.add('on');
+    } else {
+      star.classList.remove('on');
+    }
+    if (total <= n && focus) {
+      star.classList.add('focus');
+    } else {
+      star.classList.remove('focus');
+    }
+
+    total--;
+  }
+}
+
+function litSelectedStars() {
+  const selectedStar = document.getElementsByClassName('selected-star')[0];
+  if (!selectedStar) {
+    litStars(0);
+    return;
+  }
+  const id = Number(selectedStar.id[0]);
+  litStars(id);
 }
