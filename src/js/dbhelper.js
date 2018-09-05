@@ -57,6 +57,7 @@ class DBHelper {
                 if (idbRestaurant.awaitingSync) {
                   restaurants[index] = idbRestaurant;
                 }
+                // for anything else, network fetched restaurants remain untouched, and nothing needs updating in locla iDB
               });
             })).then(() => {
               tx.complete;
@@ -126,27 +127,25 @@ class DBHelper {
         function onfulfilled(restaurant) {
 
           // Return restaurant fetched from Network or local iDB restaurant if awaitingSync
-          console.log('ok so far?');
-          return restaurant;
-        },
-        /*function onfulfilled(restaurant) {
-          //TODO: after successfully fetching restaurant from API,
-          // store/update local iDB restaurant database
-          dbPromise.then(db => {
+          return dbPromise.then(db => {
             const tx = db.transaction('restaurants', 'readwrite');
             const restaurantStore = tx.objectStore('restaurants');
-            restaurantStore.get(restaurant.id)
-              .then(stored => {
-                // only update iDB restaurant data, if data is new or has been updated.
-                // if restaurant is not stored OR stored updated date doesn't match, create/update
-                if (!stored || stored.updatedAt !== restaurant.updatedAt) {
-                  restaurantStore.put(restaurant);
-                }
-              });
-            return tx.complete // make sure readwrite transaction was successful.
+
+            return restaurantStore.get(id).then(idbRestaurant => {
+              // if idbRestaurant doesn't exist, OR isn't awaitingSync and doesn't match updatedAt,
+              // create/update local idbRestaurant and return network fetched Restaurant
+              if (!idbRestaurant || (!idbRestaurant.awaitingSync && idbRestaurant.updatedAt !== restaurant.updatedAt)) {
+                restaurantStore.put(restaurant);
+              }
+              // else if local idbRestaurant is awaitingSync, use that instead.
+              else if (idbRestaurant.awaitingSync) {
+                restaurant = idbRestaurant;
+              }
+              tx.complete;
+              return restaurant;
+            });
           });
-          return restaurant; // Return restaurant fetched from network.
-        },/** */
+        },
         function onrejected(error) {
           //TODO: handle offline mode (couldn't fetch restaurant from API)
           console.error(`${error}\n Trying local indexedDB database...`);

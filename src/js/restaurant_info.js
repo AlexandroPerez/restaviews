@@ -136,11 +136,53 @@ const fillReviewsHTML = (restaurant) => {
 
   DBHelper.fetchReviewsByRestaurantId(restaurant.id)
     .then(reviews => {
+      // create form for adding reviews
+      const form = document.createElement('form');
+      form.id = 'review';
+
+      let p = document.createElement('p');
+      const name = document.createElement('input');
+      name.id = "name"
+      name.setAttribute('aria-label', 'Name');
+      name.setAttribute('placeholder', 'Enter Your Name');
+      p.appendChild(name);
+      form.appendChild(p);
+
+      const radiogroup = document.createElement('radiogroup');
+      radiogroup.id = "rating";
+      radiogroup.classList.add('rating');
+      for (let n = 1; n < 6; n++) {
+        let label = document.createElement('label');
+        label.innerHTML = `<span>${n} star</span>&#9733;`; // this is the charcode for a star ★
+        label.id = `${n}star`;
+        label.for = n;
+        radiogroup.appendChild(label);
+
+        let radio = document.createElement('input');
+        radio.setAttribute('type', 'radio');
+        radio.id = n;
+        radio.value = n;
+        radio.name = "rating";
+        radio.classList.add('hidden');
+        radiogroup.appendChild(radio);
+      }
+      form.appendChild(radiogroup);
+
+      p = document.createElement('p');
+      const textarea = document.createElement('textarea');
+      textarea.id = "comments";
+      textarea.setAttribute('aria-label', 'comments');
+      textarea.setAttribute('placeholder', 'Enter any comments here');
+      p.appendChild(textarea);
+      form.appendChild(p);
+
+
       // if no reviews, let user know, and exit sooner.
       if (!reviews) {
         const noReviews = document.createElement('p');
         noReviews.innerHTML = 'No reviews yet! Be the first one!';
         container.appendChild(noReviews);
+        container.appendChild(form);
         return;
       }
       const ul = document.getElementById('reviews-list');
@@ -148,6 +190,7 @@ const fillReviewsHTML = (restaurant) => {
         ul.appendChild(createReviewHTML(review));
       });
       container.appendChild(ul);
+      container.appendChild(form);
     })
     .catch(e => {
       console.error(e);

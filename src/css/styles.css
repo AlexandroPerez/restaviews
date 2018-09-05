@@ -247,3 +247,42 @@ select:focus, select:hover {
 .fav-toggle[aria-pressed="true"] {
   color: #ff0000;
 }
+
+/* Styles for review form */
+
+radiogroup.rating {
+  position: relative;
+}
+
+radiogroup.rating label {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  font-size: 40px;
+  color: lightgreen;
+}
+radiogroup.rating label span {
+  position: absolute; 
+  overflow: hidden; 
+  clip: rect(0 0 0 0); 
+  height: 1px; width: 1px; 
+  margin: -1px; padding: 0; border: 0;  
+}
+
+radiogroup.rating label.on {
+  color: green;
+}
+
+radiogroup.rating label.focus {
+  text-shadow: 2px 2px 10px red;
+}
+
+.hidden {
+  position: absolute !important;
+  /* top: -999px;
+  left: -999px; */
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  height: 1px; width: 1px !important;
+  margin: -1px; padding: 0; border: 0 !important;
+}
