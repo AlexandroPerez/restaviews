@@ -261,6 +261,8 @@ const createReviewForm = (id = "review") => {
 
   const radiogroup = document.createElement('radiogroup');
   radiogroup.id = "rating";
+  radiogroup.setAttribute('aria-label', 'Review out of 5 Stars');
+  radiogroup.setAttribute('aria-role', 'radiogroup');
   radiogroup.classList.add('rating');
   for (let n = 1; n < 6; n++) {
     let label = document.createElement('label');
@@ -274,6 +276,7 @@ const createReviewForm = (id = "review") => {
 
     let radio = document.createElement('input');
     radio.setAttribute('type', 'radio');
+    radio.setAttribute('aria-labelledby', 'rating');
     radio.id = n;
     radio.value = n;
     radio.name = "rating";
@@ -290,8 +293,23 @@ const createReviewForm = (id = "review") => {
   textarea.id = "comments";
   textarea.setAttribute('aria-label', 'comments');
   textarea.setAttribute('placeholder', 'Enter any comments here');
+  textarea.setAttribute('rows', '10');
   p.appendChild(textarea);
   form.appendChild(p);
+
+  p = document.createElement('p');
+  const addButton = document.createElement('button');
+  addButton.setAttribute('type', 'submit');
+  addButton.setAttribute('aria-label', 'Add Review');
+  addButton.classList.add('add-review');
+  addButton.innerHTML = "<span>+</span>";
+  p.appendChild(addButton);
+  form.appendChild(p);
+
+  form.onsubmit = function(e) {
+    e.preventDefault();
+    validateReviewForm();
+  };
 
   return form;
 };
@@ -338,4 +356,43 @@ function litSelectedStars() {
   }
   const id = Number(selectedStar.id[0]);
   litStars(id);
+}
+
+function validateReviewForm() {
+  data = {};
+
+  let name = document.getElementById('name');
+  if (name.value === '') {
+    name.focus();
+    return;
+  }
+  data.name = sanitize(name.value);
+  
+  let rating = document.querySelector('input[name="rating"]:checked');
+  if (!rating) {
+    rating = document.querySelector('input[name="rating"]'); // first radio
+    rating.focus();
+    return;
+  }
+  data.rating = Number(rating.value);
+
+  let comments = document.getElementById('comments');
+  if (comments.value === "") {
+    comments.focus();
+    return;
+  }
+  data.comments = sanitize(comments.value);
+
+  console.log(data);
+}
+
+/**
+ * It replaces "<" with "&lt;" and ">" with "&gt;" charcodes so html tags can't be injected.
+ * 
+ * @param {String} str String to sanitize html elements from.
+ */
+function sanitize(str) {
+  str = str.replace(/</g, "&lt;");
+  str = str.replace(/>/g, "&gt;");
+  return str;
 }

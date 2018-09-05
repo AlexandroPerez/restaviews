@@ -251,22 +251,31 @@ select:focus, select:hover {
 /* Styles for review form */
 
 form#review {
-  background-color: #333333;
+  background-color: #ddd;
   padding: 0px 0px 0px 25px;
   border-radius: 0px 25px 0px 25px;
   box-shadow: 2px 2px 10px #999;
 }
-form p:nth-child(1) {
+form p:first-child {
   border-radius: 0 25px 0 0;
+}
+form p:last-child {
+  padding: 0 15px 10px 10px;
+  text-align: right;
+  height: 60px;
 }
 form p {
   background-color: #fff;
   margin: 0;
-  padding: 10px;
+  padding: 10px 15px 10px 10px;
+}
+input#name {
+  border-radius: 0 15px 0 0;
 }
 form radiogroup {
   background-color: #fff;
   display: block;
+  padding: 0 10px;
 }
 
 radiogroup.rating {
@@ -275,10 +284,10 @@ radiogroup.rating {
 
 radiogroup.rating label {
   display: inline-block;
-  margin: -15px 0px -8px 0px;
+  margin: -15px 0px;
   padding: 0;
   font-size: 40px;
-  color: #90ee90;
+  color: #ddd;
 }
 radiogroup.rating label span {
   position: absolute;
@@ -308,6 +317,7 @@ input[type=text], textarea {
   -moz-transition: all 0.30s ease-in-out;
   -ms-transition: all 0.30s ease-in-out;
   -o-transition: all 0.30s ease-in-out;
+  width: 100%;
   outline: none;
   padding: 3px 0px 3px 3px;
   margin: 5px 1px 3px 0px;
@@ -328,4 +338,40 @@ radiogroup.rating label.focus {
   -ms-transition: all 0.30s ease-in-out;
   -o-transition: all 0.30s ease-in-out;
   text-shadow: 1px 1px 7px rgba(81, 203, 238, 1);
+}
+
+.add-review {
+  position: relative;
+  margin: 0 2px 2px 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background-color: #a14848;
+  height: 44px;
+  width: 44px;
+  border-radius: 50%;
+  box-shadow: 2px 2px 7px lightgrey;
+}
+.add-review:active {
+  margin: 2px 0 0 2px;
+  box-shadow: none;
+}
+.add-review:focus, .add-review:hover {
+  box-shadow: 1px 1px 7px rgba(81, 203, 238, 1),
+              1px -1px 7px rgba(81, 203, 238, 1),
+              -1px -1px 7px rgba(81, 203, 238, 1),
+              -1px 1px 7px rgba(81, 203, 238, 1);
+}
+
+.add-review span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 4em;
+  text-shadow: /* Simulate text outline */
+      2px 0px #fff, 0px 2px #fff,
+     -2px 0px #fff, 0px -2px #fff,
+      2px 2px #fff, 2px -2px #fff,
+     -2px -2px #fff, -2px 2px #fff;
 }
