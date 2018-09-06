@@ -212,12 +212,15 @@ class DBHelper {
             return restaurantIdIndex.getAll(id)
               .then(stored => {
                 //TODO: handle possible no match, or error
-                if (!stored || stored.length < 1) return Promise.reject('No reviews were found in iDB either. No way to know if Restaurant has reviews.');
+                if (!stored) return []; // return an empty array if stored is undefined
                 return stored;
               });
           });
         }
-      );
+      )
+      .then(fetchedRevies => {
+        return DBHelper.getOfflineReviews(fetchedRevies, id); // get offlineReviews as well, and return combined array
+      });
   }
 
   // TODO: This method is never used. Delete if not needed.
@@ -482,6 +485,30 @@ class DBHelper {
       console.error(e);
       // TODO: if iDB couldn't be used, or an error was thrown, try a fetch request without background sync.
       return fetch(url, PUT);
+    });
+  }
+
+  /**
+   * Rerturns a promise that resolves to a new Array of review objects containing reviews fetched from network/iDB (passed
+   * as an argument) and any reviews stored while offline in iDB.
+   * 
+   * @param {Array.<Object>} fetchedReviews Array of review objects, fetched from network.
+   * @param {number} restaurantId Id of the restaurant we're fetching reviews for.
+   * 
+   * @returns {Promise.<Array.<Object>>} A promise that resolves to an array of review objects containing fetchedReviews and offline reviews.
+   */
+  static getOfflineReviews(fetchedReviews, restaurantId) {
+    restaurantId = Number(restaurantId); // make sure id is a number for iDB
+    return dbPromise.then(db => {
+      const tx = db.transaction('offlineReviews');
+      const offlineReviewStore = tx.objectStore('offlineReviews');
+      const restaurantIdIndex = offlineReviewStore.index('restaurant_id');
+
+      return restaurantIdIndex.getAll(restaurantId).then(offlineReviews => {
+        if(!offlineReviews) offlineReviews = []; // if offlineReviews is undefined because of no matches, make it an empty array.
+        fetchedReviews.push(...offlineReviews);
+        return fetchedReviews;
+      });
     });
   }
 }

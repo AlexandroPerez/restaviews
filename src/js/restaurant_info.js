@@ -176,11 +176,14 @@ const fillReviewsHTML = (restaurant) => {
 }
 
 /**
- * Creates review <li> element and returns it.
+ * Creates review <li> element and returns it. The second argument should be true if creating a new review
+ * on the fly. It will add class ".new-review" and remove it a second later. This alongside a css color 
+ * transition, it should be enough to let user know the review is new.
  *
  * @param {{name: string, createdAt: number, rating: number, comments: string,}} review object with at least the above review information.
+ * @param {boolean} newReview Whether or not review is being posted by user and should be notified of it. Defaults to false.
  */
-const createReviewHTML = (review) => {
+const createReviewHTML = (review, newReview = false) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.className = "name";
@@ -194,12 +197,24 @@ const createReviewHTML = (review) => {
 
   const rating = document.createElement('p');
   rating.className = "rating";
-  rating.innerHTML = `Rating: ${review.rating}`;
+  let starRating = "";
+  for (let n = Number(review.rating); n > 0; n--) {
+    starRating += "&#9733;"; // this is the charcode for a star ★
+  }
+  rating.innerHTML = starRating;
   li.appendChild(rating);
 
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
   li.appendChild(comments);
+
+  // if review is new, user should be able to notice the change.
+  if (newReview) {
+    li.classList.add('new-review');
+    setTimeout(function() {
+      li.classList.remove('new-review');
+    }, 1000);
+  }
 
   return li;
 }
@@ -309,12 +324,15 @@ const createReviewForm = (id = "review", restaurantId) => {
 
   form.onsubmit = function(e) {
     e.preventDefault();
-    const data = validateAndGetData();
-    if (!data) return;
+    const review = validateAndGetData();
+    if (!review) return;
 
-    console.log(data);
-    SyncHelper.addReview(data);
+    console.log(review);
+    SyncHelper.addReview(review);
     //TODO: Add new review to list
+    const reviewList = document.getElementById('reviews-list');
+    const newReview = createReviewHTML(review, true);
+    reviewList.appendChild(newReview);
   };
 
   return form;
@@ -365,8 +383,9 @@ function litSelectedStars() {
 }
 
 function validateAndGetData() {
-  data = {};
+  const data = {};
 
+  // get name
   let name = document.getElementById('name');
   if (name.value === '') {
     name.focus();
@@ -374,6 +393,7 @@ function validateAndGetData() {
   }
   data.name = sanitize(name.value);
 
+  // get rating
   let rating = document.querySelector('input[name="rating"]:checked');
   if (!rating) {
     rating = document.querySelector('input[name="rating"]'); // first radio
@@ -383,7 +403,7 @@ function validateAndGetData() {
   let ratingLabel = document.getElementById(`${rating.value}star`);
   data.rating = Number(rating.value);
 
-
+  // get comments
   let comments = document.getElementById('comments');
   if (comments.value === "") {
     comments.focus();
@@ -391,8 +411,12 @@ function validateAndGetData() {
   }
   data.comments = sanitize(comments.value);
 
+  // get restaurant_id
   let restaurantId = document.getElementById('review').dataset.restaurantId;
   data.restaurant_id = Number(restaurantId);
+
+  // set createdAT
+  data.createdAt = new Date().toISOString();
 
   name.value = "";
   rating.checked = false;

@@ -16,5 +16,6 @@ var dbPromise = idb.open('restaviews-db', 4, function(upgradeDb) {
       const syncFavoriteStore = upgradeDb.createObjectStore('syncFavorites', {keyPath: 'restaurant_id'});
     case 3:
       const offlineReviewStore = upgradeDb.createObjectStore('offlineReviews', {keyPath: 'id', autoIncrement: true});
+      offlineReviewStore.createIndex('restaurant_id', 'restaurant_id');
   }
 });

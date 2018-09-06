@@ -150,6 +150,16 @@
   display: flex;
   flex-wrap: wrap;
   border-radius: 25px 0;
+  /* this transition is for new-reviews, so they fade color back to normal after
+     posting a new-review */
+  transition: background-color 1000ms linear;
+  -webkit-transition: background-color 1000ms linear;
+  -moz-transition: background-color 1000ms linear;
+  -o-transition: background-color 1000ms linear;
+  -ms-transition: background-color 1000ms linear;
+}
+#reviews-list li.new-review {
+  background-color: #c88916;
 }
 #reviews-list li p {
   margin: 12px 20px;
@@ -177,13 +187,14 @@
 }
 
 #reviews-list li p.rating {
-  background-color: #784568;
-  color: #f3f3f3;
+  background-color: inherit;
+  color: green;
   letter-spacing: 2px;
-  padding: 5px 15px;
+  padding: 0;
   text-transform: uppercase;
-  font-size: 1.3em;
+  font-size: 3em;
   font-weight: 600;
+  margin: 0 0 0 15px;
 }
 
 
