@@ -80,65 +80,126 @@ class SyncHelper {
   }
 
   // TODO: Listen to sync events made when a restaurant favorite button is toggled.
-  static putRequests2() {
-    // open iDB, and process all put requests, clearing iDB when done.
-    console.log('hello from putSync');
-    return new Promise(function(resolve,reject) {
-      const handleError = error => {
-        console.error(error);
-        throw Error(error);
-      }
+  /**
+   *
+   * @param {{name: String, rating: number, comments: String}} review Review objcet with above information.
+   */
+  static addReview(review) {
+    const url = `${DBHelper.API_URL}/reviews/`;
+    const POST = {
+      method: "POST",
+      body: JSON.stringify(review)
+    };
 
+    // if either SyncManager OR Service Worker aren't supported, just make a PUT fetch as usual
+    if (!window.SyncManager || !navigator.serviceWorker) {
+      return fetch(url, POST);
+    }
 
-
-    //});
-
+    // Do not make a fetch request, but instead save review to iDB, reguister
+    // a background sync, and have the service worker fetch review from iDB and POST
+    // data to server when a sync is triggered. 😎
     return dbPromise.then(db => {
-      const tx = db.transaction('putRequests');
-      const putRequestStore = tx.objectStore('putRequests');
+      const tx = db.transaction('offlineReviews', 'readwrite');
+      const offlineReviewStore = tx.objectStore('offlineReviews');
 
-      return putRequestStore.getAll().then(urls => {
-        urls.push('http://localhost:1337/barequest');
+      offlineReviewStore.add(review);
+      return tx.complete;
+    }).then(() => {
+      // register background sync if transaction was successful
+      console.log('review saved to iDB successfully!');
+      SyncHelper.syncReviews(); //TODO:TODO:TODO:TODO:TODO: delete when done debugging
 
-        const PUT = {method: 'PUT'};
-        //let counter = urls.length; // Keep track of all requests, and clean up only if all were successful
+      return navigator.serviceWorker.ready.then(function (reg) {
+        return reg.sync.register('syncReviews');
+      });
+    }).catch(err => {
+      // if review couldn't be added to offlineReview store or sync couldn't be registered
+      // attempt a regular POST fetch
+      console.error(err, "Attempting to POST data...");
+      return fetch(url, POST);
+    });
+  };
 
-        return Promise.all(urls.map(url => {
-          return fetch(url, PUT).then(res => {
-            if (!res.ok) throw Error(`PUT Fetch to ${res.url} failed with code ${res.status}`);
-            console.log(`PUT fetch to ${res.url} was oh-ok! 👍`);
-          });
-        })).then(() => {
-          console.log("I should definetly not be hea");
+  /**
+   * Return a Promise that resolves if all offline reviews are successfully POSTED,
+   * or rejects if any of them fails. Use this helper in a Background Sync to sync any
+   * reviews posted while offline.
+   * @returns {Promise}
+  */
+  static syncReviews() {
+    console.log('hea');
+    return dbPromise.then(db => {
+      // get all offline reviews
+      const tx = db.transaction('offlineReviews');
+      const offlineReviewStore = tx.objectStore('offlineReviews');
+      return offlineReviewStore.getAll();
+    }).then(offlineReviews => {
+      return Promise.all(offlineReviews.map(offlineReview => {
+        const offlineReviewId = offlineReview.id;
+        delete offlineReview.id; // Make sure offlineReview.id isn't passed to API
+        return SyncHelper.postReview(offlineReview).then(fetchedReview => {
+          // Save review to iDB for offline use, catch any errors. A failed promise
+          // to saveReview shouldn't make a background sync try to POST data again
+          SyncHelper.saveReview(fetchedReview).catch(console.error);
+          // Delete offline review, catch any errors. A failed Promise here creates
+          // a bug, since a background sync will still try to POST data.
+          SyncHelper.removeOfflineReview(offlineReviewId).catch(console.error);
         });
+      }));
+    });
+  };
 
-      })
-      .then(() => {
-        //do clean up and resolve
-        console.log('I sould not be hea');
-        return resolve();
-      }).catch(reject);
-
-      // get all put requests stored while offline
-      /*return putRequestStore.openCursor()
-        .then(function putRequest(cursor) {
-          if (!cursor) return tx.complete ; // exit if done
-
-          const url = cursor.value;
-          const PUT = {method: 'PUT'};
-          console.log("making PUT fetch to ", url);
-          // and make a PUT fetch request for each one.
-          fetch(url, PUT);
-
-          //TODO: find a way to delete only if request.ok. Couldn't use cursor.delete()
-          // whithin a .then(), it gave an error like: couldn't delete cursor, transaction
-          // ended already...
-          cursor.delete();
-
-          return cursor.continue().then(putRequest);
-        }).catch(console.error);/** */
-    }); }); // <- move these, indent above code when done
+  /**
+   * Returns a Promise that resolves to a json response from a successful fetch POST.
+   * @param {Object} data Object with review data to POST to API.
+   * @returns {JSON}
+   */
+  static postReview(data) {
+    const url = `${DBHelper.API_URL}/reviews/`; // has to fail
+    const POST = {
+      method: "POST",
+      body: JSON.stringify(data)
+    };
+    return fetch(url, POST).then(response => {
+      // if offline review was POSTED successfully, save review to iDB
+      // with response data
+      if (!response.ok) {
+        return Promise.reject(`Failed to POST offline review id: ${data.id}`);
+      }
+      return response.json();
+    });
   }
+
+  /**
+   * Returns a Promise that resolves if review was successfully saved to iDB.
+   * @param {Object} review Review Object to save to iDB for offline use
+   */
+  static saveReview(review) {
+    return dbPromise.then(db => {
+      const tx = db.transaction('reviews', 'readwrite');
+      const reviewStore = tx.objectStore('reviews');
+
+      reviewStore.put(review);
+      return tx.complete;
+    });
+  }
+
+  /**
+   * Returns a Promise that resolves if offline review was successfully removed from iDB.
+   * @param {number} id id of the offline review to remove.
+  */
+  static removeOfflineReview(id) {
+    id = Number(id); // Make sure id is a number for iDB
+    return dbPromise.then(db => {
+      const tx = db.transaction('offlineReviews', 'readwrite');
+      const offlineReviewStore = tx.objectStore('offlineReviews');
+
+      offlineReviewStore.delete(id);
+      return tx.complete;
+    });
+  }
+
 };
 
 

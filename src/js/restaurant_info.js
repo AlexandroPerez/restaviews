@@ -137,7 +137,7 @@ const fillReviewsHTML = (restaurant) => {
   DBHelper.fetchReviewsByRestaurantId(restaurant.id)
     .then(reviews => {
       // create form for adding reviews
-      const form = createReviewForm('review');
+      const form = createReviewForm('review', restaurant.id);
       const leaveReview = document.createElement('h3');
       leaveReview.innerText = "Leave a Review";
 
@@ -246,9 +246,10 @@ const getParameterByName = (name, url = window.location.href) => {
  * @param {string} id Optional id for the form. It defaults to "review".
  *
  */
-const createReviewForm = (id = "review") => {
+const createReviewForm = (id = "review", restaurantId) => {
   const form = document.createElement('form');
   form.id = id;
+  form.dataset.restaurantId = restaurantId;
 
   let p = document.createElement('p');
   const name = document.createElement('input');
@@ -308,7 +309,12 @@ const createReviewForm = (id = "review") => {
 
   form.onsubmit = function(e) {
     e.preventDefault();
-    validateReviewForm();
+    const data = validateAndGetData();
+    if (!data) return;
+
+    console.log(data);
+    SyncHelper.addReview(data);
+    //TODO: Add new review to list
   };
 
   return form;
@@ -358,7 +364,7 @@ function litSelectedStars() {
   litStars(id);
 }
 
-function validateReviewForm() {
+function validateAndGetData() {
   data = {};
 
   let name = document.getElementById('name');
@@ -367,14 +373,16 @@ function validateReviewForm() {
     return;
   }
   data.name = sanitize(name.value);
-  
+
   let rating = document.querySelector('input[name="rating"]:checked');
   if (!rating) {
     rating = document.querySelector('input[name="rating"]'); // first radio
     rating.focus();
     return;
   }
+  let ratingLabel = document.getElementById(`${rating.value}star`);
   data.rating = Number(rating.value);
+
 
   let comments = document.getElementById('comments');
   if (comments.value === "") {
@@ -383,12 +391,22 @@ function validateReviewForm() {
   }
   data.comments = sanitize(comments.value);
 
-  console.log(data);
+  let restaurantId = document.getElementById('review').dataset.restaurantId;
+  data.restaurant_id = Number(restaurantId);
+
+  name.value = "";
+  rating.checked = false;
+  comments.value = "";
+  // reset selected label stars in UI
+  ratingLabel.classList.remove('selected-star');
+  litSelectedStars();
+
+  return data;
 }
 
 /**
  * It replaces "<" with "&lt;" and ">" with "&gt;" charcodes so html tags can't be injected.
- * 
+ *
  * @param {String} str String to sanitize html elements from.
  */
 function sanitize(str) {

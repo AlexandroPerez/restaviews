@@ -1,4 +1,4 @@
-var dbPromise = idb.open('restaviews-db', 3, function(upgradeDb) {
+var dbPromise = idb.open('restaviews-db', 4, function(upgradeDb) {
   switch(upgradeDb.oldVersion) {
     case 0:
       const restaurantStore = upgradeDb.createObjectStore('restaurants', {keyPath: 'id'});
@@ -13,6 +13,8 @@ var dbPromise = idb.open('restaviews-db', 3, function(upgradeDb) {
       // more than once while offline, only the latest action will be synced, saving requests.
 
       // Store an object instead of a URL: {restaurant_id: id, url: "url"}
-      const putRequestStore = upgradeDb.createObjectStore('syncFavorites', {keyPath: 'restaurant_id'});
+      const syncFavoriteStore = upgradeDb.createObjectStore('syncFavorites', {keyPath: 'restaurant_id'});
+    case 3:
+      const offlineReviewStore = upgradeDb.createObjectStore('offlineReviews', {keyPath: 'id', autoIncrement: true});
   }
 });
