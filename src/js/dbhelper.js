@@ -5,13 +5,13 @@ class DBHelper {
 
   //TODO: old database url, delete after removing other old methods. See todos below.
   static get DATABASE_URL() {
-    const protocol = window.location.protocol;
-    const host =  window.location.host;
+    const protocol = location.protocol;
+    const host =  location.host;
     return `${protocol}//${host}/data/restaurants.json`;
   }
   static get API_URL() {
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
+    const protocol = location.protocol;
+    const hostname = location.hostname;
     const port = 1337; // change this if port number of your sails server is different.
     return `${protocol}//${hostname}:${port}`;
   }
@@ -491,10 +491,10 @@ class DBHelper {
   /**
    * Rerturns a promise that resolves to a new Array of review objects containing reviews fetched from network/iDB (passed
    * as an argument) and any reviews stored while offline in iDB.
-   * 
+   *
    * @param {Array.<Object>} fetchedReviews Array of review objects, fetched from network.
    * @param {number} restaurantId Id of the restaurant we're fetching reviews for.
-   * 
+   *
    * @returns {Promise.<Array.<Object>>} A promise that resolves to an array of review objects containing fetchedReviews and offline reviews.
    */
   static getOfflineReviews(fetchedReviews, restaurantId) {

@@ -100,7 +100,11 @@
   text-align: center;
 }
 #restaurant-img {
-	width: 100%;
+  width: 100%;
+  border-radius: 25px 25px 0 0;
+}
+#image-container {
+  position: relative;
 }
 #restaurant-address {
   font-size: .9em;

@@ -1,5 +1,19 @@
 let restaurant;
 var map;
+const mapOfflineContent = `
+<div style="height: 100%; width: 100%; position: absolute; top: 0px; left: 0px; background-color: rgb(229, 227, 223);">
+	<div style="height: 100%; width: 100%; display: table; background-color: #e0e0e0; position: relative; left: 0; top: 0;">
+		<div style="border-radius: 1px; padding-top: 0; padding-left: 10%; padding-right: 10%; position: static; vertical-align: middle; display: table-cell;">
+			<div style="margin: 5px; margin-bottom: 20px; color: #616161; font-family: Roboto, Arial, sans-serif; text-align: center; font-size: 24px;">
+				Oops! There was a problem while fetching the map.
+			</div>
+			<div style="margin: 5px; color: #757575; font-family: Roboto, Arial, sans-serif; text-align: center; font-size: 14px;">
+				We can't load OpenStreetMaps at the moment. There was a problem while fetching the map, or you're currently offline. You can continue using the app, but you won't be able to use Maps.
+			</div>
+		</div>
+	</div>
+</div>
+`;
 
 /**
  * Populate restaurant and review information, and initialize Google map.
@@ -32,19 +46,30 @@ const initMap = (restaurant) => {
   });/** */
 
   // Create new openstreetmap
-  self.map = L.map('map', {
-    center: [restaurant.latlng.lat, restaurant.latlng.lng],
-    zoom: 16,
-    scrollWheelZoom: false,
-    dragging: false,
-  });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
+  // do not load maps if offline, or request openstreetmaps isn't ok.
+  fetch("https://tile.openstreetmap.org/").then(res => {
+    if (!res.ok) {
+      return Promise.reject();
+    }
+    console.log('openstreetmaps is up');
+    self.map = L.map('map', {
+      center: [restaurant.latlng.lat, restaurant.latlng.lng],
+      zoom: 16,
+      scrollWheelZoom: false,
+      dragging: false,
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
 
-  // Add marker to map
-  DBHelper.mapMarkerForRestaurant(restaurant, self.map);
+    // Add marker to map
+    DBHelper.mapMarkerForRestaurant(restaurant, self.map);
+  }).catch(err => {
+    console.error(err);
+    let mapContainer = document.getElementById('map');
+    mapContainer.innerHTML = mapOfflineContent;
+  });
   // return restaurant object to promise chain
   return restaurant;
 };
@@ -82,6 +107,24 @@ const fillRestaurantHTML = (restaurant) => {
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
   image.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
   image.sizes = DBHelper.imageSizesForRestaurant(restaurant);
+
+  // TODO: add favorite restaurant toggle button
+  const imageContainer = document.getElementById('image-container');
+  const favorite = document.createElement('button');
+  favorite.innerHTML = "&#x2764;";
+  favorite.classList.add('fav-toggle');
+  favorite.dataset.restaurant_id = restaurant.id;
+  favorite.setAttribute("aria-pressed", restaurant.is_favorite || false); // false if undefined
+
+  const toggleButton = function() {
+    const isFavorite = !(this.getAttribute("aria-pressed") === "true");
+    const id = this.dataset.restaurant_id;
+    this.setAttribute("aria-pressed", isFavorite);
+    DBHelper.markFavorite(id, isFavorite);
+  };
+  favorite.onclick = toggleButton;
+  imageContainer.append(favorite);
+  // TODO:
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -177,7 +220,7 @@ const fillReviewsHTML = (restaurant) => {
 
 /**
  * Creates review <li> element and returns it. The second argument should be true if creating a new review
- * on the fly. It will add class ".new-review" and remove it a second later. This alongside a css color 
+ * on the fly. It will add class ".new-review" and remove it a second later. This alongside a css color
  * transition, it should be enough to let user know the review is new.
  *
  * @param {{name: string, createdAt: number, rating: number, comments: string,}} review object with at least the above review information.
@@ -438,3 +481,5 @@ function sanitize(str) {
   str = str.replace(/>/g, "&gt;");
   return str;
 }
+
+SyncHelper.registerServiceWorker();

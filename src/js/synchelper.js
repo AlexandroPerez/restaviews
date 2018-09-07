@@ -2,8 +2,6 @@
  * Sync helper functions
  */
 class SyncHelper {
-  // TODO: move DBHelper.markFavorite here
-
 
   /**
    * Return a Promise that resolves if all favorite restaurant PUT requests were successful,
@@ -108,7 +106,6 @@ class SyncHelper {
     }).then(() => {
       // register background sync if transaction was successful
       console.log('review saved to iDB successfully!');
-      SyncHelper.syncReviews(); //TODO:TODO:TODO:TODO:TODO: delete when done debugging
 
       return navigator.serviceWorker.ready.then(function (reg) {
         return reg.sync.register('syncReviews');
@@ -200,50 +197,14 @@ class SyncHelper {
     });
   }
 
-};
+  static registerServiceWorker () {
 
+    if (!navigator.serviceWorker) return;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-dbPromise.then(db => {
-  const tx = db.transaction('putRequests');
-  const putRequestStore = tx.objectStore('putRequests');
-
-  return putRequestStore.getAll().then(urls => {
-    urls.push('http://localhost:1337/barequest'); // inject a request that will fail.
-
-    const PUT = {method: 'PUT'};
-
-    return Promise.all(urls.map(url => {
-      fetch(url, PUT).then(res => {
-        if (!res.ok) return Promise.reject(`PUT Fetch to ${res.url} failed with code ${res.status}`);
-        console.log(`PUT fetch to ${res.url} was oh-ok! 👍`);
-      });
-    })).then(() => {
-      console.log("I should definitely not be printed"); // why is this printed?
+    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+      console.log("Service Worker has been registered successfully!");
+    }).catch((e) => {
+      console.log("Coudn't register service worker... \n", e);
     });
-
-  })
-  .then(() => {
-    //do clean up and resolve
-    console.log('I sould not be printed'); // and even this?
-    return resolve();
-  });
-});
-
-/** */
+  }
+};

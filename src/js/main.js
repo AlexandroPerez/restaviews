@@ -1,5 +1,19 @@
 var map = undefined; // Global variable to hold Google Maps information, and whether or not initMap executed.
 self.markers = []; // Global variable to hold current map markers.
+const mapOfflineContent = `
+<div style="height: 100%; width: 100%; position: absolute; top: 0px; left: 0px; background-color: rgb(229, 227, 223);">
+	<div style="height: 100%; width: 100%; display: table; background-color: #e0e0e0; position: relative; left: 0; top: 0;">
+		<div style="border-radius: 1px; padding-top: 0; padding-left: 10%; padding-right: 10%; position: static; vertical-align: middle; display: table-cell;">
+			<div style="margin: 5px; margin-bottom: 20px; color: #616161; font-family: Roboto, Arial, sans-serif; text-align: center; font-size: 24px;">
+				Oops! There was a problem while fetching the map.
+			</div>
+			<div style="margin: 5px; color: #757575; font-family: Roboto, Arial, sans-serif; text-align: center; font-size: 14px;">
+				We can't load OpenStreetMaps at the moment. There was a problem while fetching the map, or you're currently offline. You can continue using the app, but you won't be able to use Maps.
+			</div>
+		</div>
+	</div>
+</div>
+`;
 
 document.addEventListener('DOMContentLoaded', (event) => {
   DBHelper.fetchRestaurantsPromise()
@@ -35,17 +49,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
 }/** */
 
 const initMap = (restaurants) => {
-  // TODO: in mobile, dragging is disabled, implement a way to allow draggin, like adding a button to the map?
-  self.map = L.map('map', {
-    center: [40.717216, -73.977501],
-    zoom: 12,
-    scrollWheelZoom: false,
-    dragging: !L.Browser.mobile
+
+  return fetch("https://tile.openstreetmap.org/").then(res => {
+    if (!res.ok) {
+      return Promise.reject();
+    }
+    // TODO: in mobile, dragging is disabled, implement a way to allow draggin, like adding a button to the map?
+    self.map = L.map('map', {
+      center: [40.717216, -73.977501],
+      zoom: 12,
+      scrollWheelZoom: false,
+      dragging: !L.Browser.mobile
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    return restaurants;
+  }).catch(err => {
+    console.error(err);
+    let mapContainer = document.getElementById('map');
+    mapContainer.innerHTML = mapOfflineContent;
+    return restaurants;
   });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
 
   return restaurants; // pipe restaurants back to Promise chain.
 }
@@ -210,15 +236,6 @@ const createRestaurantHTML = (restaurant) => {
     const id = this.dataset.restaurant_id;
     this.setAttribute("aria-pressed", isFavorite);
     DBHelper.markFavorite(id, isFavorite);
-    /*
-    if (favorite) {
-      this.setAttribute("aria-pressed", "false");
-      //TODO: make a handle request that sets restaurant as false or true
-      // set restaurant as not favorite
-    } else {
-      this.setAttribute("aria-pressed", "true");
-      //TODO: set restaurant as favorite
-    }*/
   };
   favorite.onclick = toggleButton;
   li.append(favorite);
@@ -250,6 +267,7 @@ const createRestaurantHTML = (restaurant) => {
   });
 }/** */
 const addMarkersToMap = (restaurants) => {
+  if (!self.map) return; // if map isn't defined, maps aren't available, exit sooner.
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);

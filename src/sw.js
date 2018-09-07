@@ -8,7 +8,7 @@ var allCaches = [
 
 // External Scripts can be imported into the service worker scope by using importScripts!!
 // see: https://developer.mozilla.org/en-US/docs/Web/API/WorkerGlobalScope/importScripts
-importScripts('js/vendor/idb.js', 'js/dbpromise.js', 'js/synchelper.js');
+importScripts('js/vendor/idb.js', 'js/dbpromise.js', 'js/dbhelper.js', 'js/synchelper.js');
 
 /** At Service Worker Install time, cache all static assets */
 self.addEventListener('install', function(event) {
@@ -20,7 +20,6 @@ self.addEventListener('install', function(event) {
         '/css/styles.css',
         '/css/styles-medium.css',
         '/js/vendor/idb.js',
-        '/img/icon_error.png',
         '/js/dbhelper.js',
         '/js/synchelper.js',
         '/js/dbpromise.js',
@@ -146,6 +145,19 @@ self.addEventListener('sync', event => {
         // Open iDB restaurant Store and remove properties from failed syncs
         // syncFavorites Store uses restaurant_id as key, so any remaining records
         // in it point to failed syncs at this point.
+      } else {
+        console.log("Background Sync failed, Browser will retry later as it sees fit.");
+      }
+      console.error("Reason Background Sync failed: ", err);
+    })
+  )}
+  if (event.tag == 'syncReviews') {
+    // see: https://wicg.github.io/BackgroundSync/spec/#dom-syncevent-lastchance
+    event.waitUntil(SyncHelper.syncReviews().catch(err => {
+      if (event.lastChance) {
+        console.error("Background Sync failed all attempts to sync. No more attempts will be made.");
+        // TODO: Do some clean up in iDB if all attempts failed. Just clear offlineReviews iDB store;
+        SyncHelper.clearStore('offlineReviews');
       } else {
         console.log("Background Sync failed, Browser will retry later as it sees fit.");
       }

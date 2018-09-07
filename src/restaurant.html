@@ -46,7 +46,9 @@
     <!-- Beginning restaurant -->
     <section id="restaurant-container" role="contentinfo" aria-label="Restaurant Information">
       <h2 id="restaurant-name"></h2>
-      <img id="restaurant-img">
+      <div id="image-container">
+        <img id="restaurant-img">
+      </div>
       <p id="restaurant-cuisine"></p>
       <p id="restaurant-address"></p>
       <table id="restaurant-hours"></table>
@@ -73,7 +75,7 @@
   <script defer type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
   <script defer type="application/javascript" charset="utf-8" src="js/synchelper.js"></script>
   <!-- Main javascript file -->
-  <script type="text/javascript" src="js/restaurant_info.js"></script>
+  <script defer type="text/javascript" src="js/restaurant_info.js"></script>
 
   <!-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDWx4sbcoofpPfx4eYU54BBNPlcDhaKEWM&libraries=places&language=en&region=US&callback=initMap"></script> -->
   <!-- End scripts -->

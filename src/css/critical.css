@@ -130,6 +130,7 @@ nav.breadcrumb {
 /* TODO: give maps a layout fit for mobile */
 #map {
   /* height: 400px; */
+  position: relative;
   height: calc(100vh - 214px);
   width: 100%;
   background-color: #ccc;
