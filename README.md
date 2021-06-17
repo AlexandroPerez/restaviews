@@ -1,5 +1,13 @@
+# This project is being updated...
+
+There are major flaws in most of the packages used in this project, so I need time to update latest sails among other packages.
+
+So installation and local deployment may not work right now. As of right now using latest version of Node 10 runs a somehow broken app, but a broken app is not a good app, is it?
+
 # Mobile Web Specialist Certification Course
+
 ---
+
 #### _Three Stage Course Material Project - Restaurant Reviews_
 
 ## Project Overview: Stage 1 [DONE]
@@ -8,12 +16,11 @@ For the **Restaurant Reviews** project, I incrementally converted a static webpa
 
 ### Specification
 
-I was provided the code for a restaurant reviews website. The code had a lot of issues. It’s barely usable on a desktop browser, much less a mobile device. It also doesn’t include any standard accessibility features, and it doesn’t work offline at all. My job was to update the code to resolve these issues while still maintaining the included functionality. 
+I was provided the code for a restaurant reviews website. The code had a lot of issues. It’s barely usable on a desktop browser, much less a mobile device. It also doesn’t include any standard accessibility features, and it doesn’t work offline at all. My job was to update the code to resolve these issues while still maintaining the included functionality.
 
 ## Project Overview: Stage 2 [DONE]
 
 During this stage of the **Restaurant Reviews** project, instead of relying on a static json file, I fetched restaurant data from a local API server that responded with json data. The app had to keep working offline, so I used indexedDB to cache API responses from previously seen restaurants, so they were available offline in the next visit.
-
 
 ### Specification
 
@@ -25,9 +32,10 @@ For the last Stage of the **Restaurant Reviews** project, I implemented the abil
 
 ### Specification
 
-Building from previous code, and with after being provided an improved version of the API code, that allowed new restaurant reviews to be added, and restaurants to be marked as favorites, I implemented two new features in the app: favorite restaurants, and new reviews. These features were available offline thanks to Background Sync and the Service worker. 
+Building from previous code, and with after being provided an improved version of the API code, that allowed new restaurant reviews to be added, and restaurants to be marked as favorites, I implemented two new features in the app: favorite restaurants, and new reviews. These features were available offline thanks to Background Sync and the Service worker.
 
 # How to Run in your local environment
+
 1. Clone the repo.
 2. Make sure [node.js is installed](https://nodejs.org/en/)
 3. You can use `yarn install` like me, or simply `npm install`
@@ -65,4 +73,4 @@ debug: -------------------------------------------------------debug:...
 debug: Environment : development
 debug: Port        : 1337
 debug: -------------------------------------------------------
-``` 
+```
