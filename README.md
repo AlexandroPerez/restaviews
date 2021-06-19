@@ -4,6 +4,11 @@ There are major flaws in most of the packages used in this project, so I need ti
 
 So installation and local deployment may not work right now. As of right now using latest version of Node 10 runs a somehow broken app, but a broken app is not a good app, is it?
 
+### Update
+
+Project will be also ported to a JAM stack. Most likely React(J), Mapbox(A) and Gatsby(M)
+
+
 # Mobile Web Specialist Certification Course
 
 ---
