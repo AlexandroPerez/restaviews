@@ -8,7 +8,6 @@ import cleanCss from 'gulp-clean-css';
 import newer from 'gulp-newer';
 import rename from 'gulp-rename';
 import htmlmin from 'gulp-htmlmin';
-import runSequence from 'run-sequence';
 import sourcemaps from 'gulp-sourcemaps';
 
 const paths = {
@@ -125,27 +124,43 @@ export function icons() {
     .pipe(responsive({
       '**/*.png': [{
         width: 72,
+        height: 72,
+        withoutEnlargement: false,
         rename: { suffix: '-72x72'}
       }, {
         width: 96,
+        height: 96,
+        withoutEnlargement: false,
         rename: { suffix: '-96x96'}
       },  {
         width: 128,
+        height: 128,
+        withoutEnlargement: false,
         rename: { suffix: '-128x128'}
       },  {
         width: 144,
+        height: 144,
+        withoutEnlargement: false,
         rename: { suffix: '-144x144'}
       },  {
         width: 152,
+        height: 152,
+        withoutEnlargement: false,
         rename: { suffix: '-152x152'}
       },  {
         width: 192,
+        height: 192,
+        withoutEnlargement: false,
         rename: { suffix: '-192x192'}
       },  {
         width: 384,
+        height: 384,
+        withoutEnlargement: false,
         rename: { suffix: '-384x384'}
       },  {
         width: 512,
+        height: 512,
+        withoutEnlargement: false,
         rename: { suffix: '-512x512'}
       }]
     }, {
@@ -158,7 +173,9 @@ export function icons() {
     .pipe(gulp.dest(paths.images.icon.dest));
 }
 
-gulp.task('images', ['jpgImages', 'pngImages', 'icons']);
+// Run Image tasks in parallel
+const images = gulp.parallel(jpgImages, pngImages, icons);
+
 
 export function styles() {
   return gulp.src(paths.styles.src, {sourcemaps: true})
@@ -198,16 +215,9 @@ export function watch() {
   gulp.watch(paths.images.icon.src, icons).on('change', logEvent);
 }
 
-/**
- * done is an (arbitrary?) callback function that will be used to let gulp know the task is **done**. Gulp
- * provides this callback function when executed in the CLI? i.e. $ gulp build
- */
-export function build(done) {
-  runSequence(
-    'clean',
-    ['scripts','vendorScripts','styles','html','json','images'],
-    done
-  );
-}
+// Run build in the following sequence: first clean, then everything else in parallel
+exports.build = gulp.series(
+  clean,
+  gulp.parallel(scripts, vendorScripts, styles, html, json, images),
+);
 
-export default build;

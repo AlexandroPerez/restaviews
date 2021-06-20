@@ -28,11 +28,11 @@ self.addEventListener('install', function(event) {
         // cache leaflet assets
         '/js/vendor/leaflet.js',
         '/css/vendor/leaflet.css',
-        '/css/vendor/vendor/images/layers-2x.png',
-        '/css/vendor/vendor/images/layers.png',
-        '/css/vendor/vendor/images/marker-icon-2x.png',
-        '/css/vendor/vendor/images/marker-icon.png',
-        '/css/vendor/vendor/images/marker-shadow.png'
+        '/css/vendor/images/layers-2x.png',
+        '/css/vendor/images/layers.png',
+        '/css/vendor/images/marker-icon-2x.png',
+        '/css/vendor/images/marker-icon.png',
+        '/css/vendor/images/marker-shadow.png'
       ]);
     })
   );
