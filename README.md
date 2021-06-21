@@ -1,12 +1,10 @@
-# This project is being updated...
+## Update: This Project has been migrated to Sails v1
 
-There are major flaws in most of the packages used in this project, so I need time to update latest sails among other packages.
+This Project was originally built using Sails `v0.12`, and Gulp `v3.9.1`. Now the project has been updated to work with Sails `v1.4.3` and Gulp `v4.0.2`. Other packages have been upgraded as well.
 
-So installation and local deployment may not work right now. As of right now using latest version of Node 10 runs a somehow broken app, but a broken app is not a good app, is it?
+You can refer to this repo to see an example of how you can migrate your own project as well.
 
-### Update
-
-Project will be also ported to a JAM stack. Most likely React(J), Mapbox(A) and Gatsby(M)
+I will end remaking and improving this Project by using a JAM stack. Most likely React(J), Sails(A) and Gatsby(M). I will provide a link to new Project when I start working on it.
 
 
 # Mobile Web Specialist Certification Course
@@ -41,11 +39,14 @@ Building from previous code, and with after being provided an improved version o
 
 # How to Run in your local environment
 
-1. Clone the repo.
-2. Make sure [node.js is installed](https://nodejs.org/en/)
-3. You can use `yarn install` like me, or simply `npm install`
-4. Run `gulp build` to have gulp build the `dist` folder.
-5. Run `yarn start` or `npm start` to start both the static-server `localhost:8000` and sails-server `localhost:1337`.
+1. Install [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) (Node Version Manager), or just make sure you have a stable Node version installed. 
+> Please note that this project was last tested using Node version `14.17`, and **nvm** will use the `.nvmrc` provided to use it as default. So if you don't use nvm, and run into any problems try using Node `14.17`.
+2. This Project also relies on Gulp.js, so you'll need to install the `gulp-cli` if you don't have it on your system already:
+`> npm install --global gulp-cli`
+3. Clone the repo.
+4. You can use `yarn install` like me, or if you prefer npm, delete `yarn.lock` and run `npm install`.
+5. Run `gulp build` to have gulp build the `dist` folder.
+6. Run `yarn start` or `npm start` to start both the static-server `localhost:8000` and sails-server `localhost:1337`.
 
 **NOTE** Depending on your OS, you may need to wait serveral seconds for the `sails-server` to start. You'll know app is ready to serve content once you see the following output after running `yarn start` or `npm start`:
 
