@@ -8,7 +8,7 @@
   },
   "scripts": {
     "sails-server": "node sails-server.js",
-    "static-server": "node_modules/http-server/bin/http-server ./dist -g -p 8000 -c 31104000 -o",
+    "static-server": "npx http-server ./dist -g -a localhost -p 8000 -c 31104000 -o",
     "start": "concurrently --kill-others-on-fail -r \"npm:*-server\""
   },
   "dependencies": {
