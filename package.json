@@ -12,7 +12,7 @@
     "start": "concurrently --kill-others-on-fail -r \"npm:*-server\""
   },
   "dependencies": {
-    "async": "3.2.0",
+    "async": "3.2.2",
     "include-all": "4.0.3",
     "lodash": "4.17.21",
     "rc": "1.2.8",
